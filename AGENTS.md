@@ -13,4 +13,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 4. **Navigation**: Users can toggle between the `dashboard` and `lesson` views via `setView` in the store. Sidebars and headers must provide clear back-links to the dashboard.
 5. **Validation Logic**: `judgeEngine.ts` bridges the VFS changes to lesson progression. It triggers audio signals per sub-task. Deep environment checks (VFS state + history) are preferred over simple presence checks to prevent terminal false positives.
 6. **Animations**: The `DecryptText` component relies on a word-by-word decryption algorithm. Always prefer clean and rapid animations (`0.5` ticks per interval) rather than slow letter-by-letter setups to enhance user engagement.
+7. **Modular VFS**: Every block of lessons now has its own `BLOCK_VFS` definition. The `vfsStore` handles re-initialization upon block transition to prevent state pollution between curriculum phases.
+8. **Sidebar Hints**: Real-time task hints are rendered in the `Sidebar.tsx` as "System Insights" using a glitch-blue palette (`#00D1FF`). These hints are dynamically linked to the active sub-task.
+9. **Tab Autocomplete**: Custom autocomplete logic is implemented in `vfsStore` and integrated into `TerminalController`. It handles path/file completion with directory-aware trailing slashes and prevents default browser focus shifts.
 <!-- END:signal-to-shell-rules -->

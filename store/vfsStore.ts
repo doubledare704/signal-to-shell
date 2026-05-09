@@ -309,11 +309,41 @@ export const useVFSStore = create<VFSStore>()(
               break;
             }
             case 'grep': {
-              const pattern = args.filter(a => !a.startsWith('-'))[0];
+              const pattern = args.filter(a => !a.startsWith('-'))[0]?.replace(/['"]/g, '');
               const target = args.filter(a => !a.startsWith('-'))[1];
-              const input = target ? (vfs[resolvePath(currentPath, target)] as FileNode)?.content : pipeOutput;
-              if (input) {
-                currentOutput = input.split('\n').filter(line => line.includes(pattern)).join('\n');
+              const isCaseInsensitive = args.includes('-i');
+              const isRecursive = args.includes('-r') || args.includes('-R');
+
+              if (!pattern) {
+                currentOutput = 'grep: missing pattern';
+                break;
+              }
+
+              const search = (text: string, p: string) => {
+                if (isCaseInsensitive) {
+                  return text.toLowerCase().includes(p.toLowerCase());
+                }
+                return text.includes(p);
+              };
+
+              if (isRecursive) {
+                const results: string[] = [];
+                const startDir = resolvePath(currentPath, target || '.');
+                Object.keys(vfs).forEach(path => {
+                  if (path.startsWith(startDir === '/' ? '/' : startDir + '/') || path === startDir) {
+                    const node = vfs[path];
+                    if (node.type === 'file') {
+                      const matches = node.content.split('\n').filter(line => search(line, pattern));
+                      matches.forEach(m => results.push(`${path}: ${m}`));
+                    }
+                  }
+                });
+                currentOutput = results.join('\n');
+              } else {
+                const input = target ? (vfs[resolvePath(currentPath, target)] as FileNode)?.content : pipeOutput;
+                if (input) {
+                  currentOutput = input.split('\n').filter(line => search(line, pattern)).join('\n');
+                }
               }
               break;
             }

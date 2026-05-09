@@ -316,6 +316,56 @@ export const LESSONS: Lesson[] = [
     feedback: {
       success: "✓ SIGNAL_DISTILLED. Decryption protocol initiated. YOU ARE NOW READY TO INTERACT WITH THE INTELLIGENCE SIGNAL."
     }
+  },
+  {
+    id: "L2-4-INSENSITIVE",
+    blockId: "B2",
+    title: "Lesson 2.4: Pattern Recognition",
+    description: "The system logs are inconsistent. Scan for critical signatures regardless of their casing. Mastery of the case-insensitive signal is paramount.",
+    example: "grep -i 'pattern' file.log",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Search 'system.log' for all occurrences of 'error' (case-insensitive) and output them to the terminal.",
+        validate: (vfs, history, currentPath) => {
+          const lastInput = history.filter(h => h.type === 'input').pop();
+          const lastOutput = history.filter(h => h.type === 'output').pop();
+          const isGrepI = lastInput?.content.includes('grep -i') && lastInput?.content.includes('error');
+          const hasResults = lastOutput?.content.toLowerCase().includes('error_404') && 
+                            lastOutput?.content.split('\n').filter(Boolean).length >= 3;
+          return !!(isGrepI && hasResults);
+        },
+        hint: "Ignore the variance in signal casing to capture all matches. Example: 'grep -i \"debug\" app.log'"
+      }
+    ],
+    feedback: {
+      success: "✓ PATTERN_RECOGNIZED. Inconsistencies accounted for."
+    }
+  },
+  {
+    id: "L2-5-RECURSIVE",
+    blockId: "B2",
+    title: "Lesson 2.5: Recursive Audit",
+    description: "Deep intelligence requires deep scanning. Audit the entire source tree for specific protocol versions. Traverse the hierarchy recursively.",
+    example: "grep -r 'signal' src/",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Perform a recursive search for the string 'API v1' within the entire '/src' directory.",
+        validate: (vfs, history, currentPath) => {
+          const lastInput = history.filter(h => h.type === 'input').pop();
+          const lastOutput = history.filter(h => h.type === 'output').pop();
+          const isRecursive = (lastInput?.content.includes('grep -r') || lastInput?.content.includes('grep -R')) && 
+                             lastInput?.content.includes('API v1');
+          const hasMatch = lastOutput?.content.includes('/src/app/routes/api.py');
+          return !!(isRecursive && hasMatch);
+        },
+        hint: "Scan through all nested nodes in a directory branch. Example: 'grep -r \"FIXME\" project/'"
+      }
+    ],
+    feedback: {
+      success: "✓ AUDIT_COMPLETE. All nodes verified. Block 2 finalized."
+    }
   }
 ];
 
