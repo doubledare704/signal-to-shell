@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useLessonStore, LESSONS } from './lessonStore';
 
 export type FileNode = {
   type: 'file';
@@ -45,6 +46,13 @@ export const BLOCK_VFS: Record<string, VFSState> = {
     },
     '/cyber-nexus': { type: 'dir', children: [] },
   },
+  'B3': {
+    '/': { type: 'dir', children: ['main.py', 'STS.md', 'logs'] },
+    '/main.py': { type: 'file', content: "print('Signal Active')" },
+    '/STS.md': { type: 'file', content: "# STS Brain\nPersona: Senior Architect\nConstraint: No external dependencies." },
+    '/logs': { type: 'dir', children: ['debug.log'] },
+    '/logs/debug.log': { type: 'file', content: 'Error: State mismatch at line 42' }
+  },
   'B2': {
     '/': { type: 'dir', children: ['README.md', 'src', 'legacy', 'MIGRATION.md', 'system.log'] },
     '/README.md': {
@@ -78,7 +86,7 @@ const resolvePath = (current: string, target: string) => {
   if (!target) return current;
   const basePath = target.startsWith('/') ? '' : current;
   const parts = `${basePath}/${target}`.split('/').filter(Boolean);
-  
+
   const resolved: string[] = [];
   for (const part of parts) {
     if (part === '.') continue;
@@ -88,7 +96,7 @@ const resolvePath = (current: string, target: string) => {
       resolved.push(part);
     }
   }
-  
+
   return '/' + resolved.join('/');
 };
 
@@ -127,7 +135,7 @@ export const useVFSStore = create<VFSStore>()(
         const { vfs, currentPath } = get();
         const parts = input.split(/\s+/);
         const lastPart = parts[parts.length - 1];
-        
+
         if (input.endsWith(' ') || !lastPart) return null;
 
         let searchDir = currentPath;
@@ -161,12 +169,41 @@ export const useVFSStore = create<VFSStore>()(
 
         let newHistory = [...state.history, { type: 'input', content: `${currentPath} > ${rawInput}` } as HistoryEntry];
 
+        // Block 3 (Mind Mischief) Interceptor for Lesson 3.1
+        if (state.currentBlockId === 'B3') {
+          // Use dynamic import or separate store access to avoid circular dependency if any
+          const { currentLessonIdx, currentLogicStepIdx, setAgentStatus, setCurrentLogicStepIdx } = (useLessonStore as any).getState();
+          const currentLesson = LESSONS[currentLessonIdx];
+
+          if (currentLesson?.id === 'L3-1-REACT') {
+            const currentStep = currentLesson.logicChain?.[currentLogicStepIdx];
+            if (currentStep) {
+              if (rawInput === currentStep.required_command) {
+                setAgentStatus('SUCCESS');
+                newHistory.push({ type: 'system', content: currentStep.on_success });
+
+                if (currentLesson.logicChain && currentLogicStepIdx < currentLesson.logicChain.length - 1) {
+                  setTimeout(() => {
+                    setCurrentLogicStepIdx(currentLogicStepIdx + 1);
+                    setAgentStatus('THINKING');
+                  }, 1500);
+                }
+              } else {
+                setAgentStatus('ERROR');
+                newHistory.push({ type: 'system', content: `SIGNAL_ERROR: THE AGENT CANNOT PROCESS THIS OBSERVATION. EXPECTED: ${currentStep.required_command}` });
+                set({ history: newHistory });
+                return;
+              }
+            }
+          }
+        }
+
         if (rawInput === 'sts-reset') {
           const initialVfs = BLOCK_VFS[state.currentBlockId] || INITIAL_VFS;
-          set({ 
-            vfs: JSON.parse(JSON.stringify(initialVfs)), 
-            currentPath: '/', 
-            history: [{ type: 'system', content: `SYSTEM RESET COMPLETE. VFS RESTORED TO ${state.currentBlockId} INITIAL STATE.` }] 
+          set({
+            vfs: JSON.parse(JSON.stringify(initialVfs)),
+            currentPath: '/',
+            history: [{ type: 'system', content: `SYSTEM RESET COMPLETE. VFS RESTORED TO ${state.currentBlockId} INITIAL STATE.` }]
           });
           return;
         }
@@ -193,7 +230,7 @@ export const useVFSStore = create<VFSStore>()(
           }
           const cmd = args.shift();
           if (!cmd) continue;
-          
+
           let currentOutput = '';
 
           switch (cmd) {
@@ -204,7 +241,7 @@ export const useVFSStore = create<VFSStore>()(
               const recursive = args.includes('-R');
               const target = args.filter(a => !a.startsWith('-'))[0] || '';
               const targetPath = resolvePath(currentPath, target);
-              
+
               if (recursive) {
                 const results: string[] = [];
                 const walk = (path: string) => {
@@ -425,7 +462,7 @@ export const useVFSStore = create<VFSStore>()(
                   if (newVfs[destPath]?.type === 'dir') {
                     actualDest = resolvePath(destPath, srcPath.split('/').pop()!);
                   }
-                  
+
                   newVfs[actualDest] = node;
                   if (cmd === 'mv') {
                     delete newVfs[srcPath];

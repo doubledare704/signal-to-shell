@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Terminal, FolderTree, FileText, Maximize2, Globe } from 'lucide-react';
 import { useVFSStore } from '../store/vfsStore';
-import { useLessonStore } from '../store/lessonStore';
+import { useLessonStore, LESSONS } from '../store/lessonStore';
 import { useJudgeEngine } from '../lib/judgeEngine';
+import LogicFeed from './LogicFeed';
 
 const THEME = {
   bg: 'bg-[#050505]',
@@ -19,11 +20,14 @@ const THEME = {
 
 export const TerminalController = () => {
   const { vfs, currentPath, history, executeCommand, addHistory, getAutocomplete } = useVFSStore();
-  const isDecrypting = useLessonStore((state) => state.isDecrypting);
+  const { isDecrypting, currentBlockId, currentLessonIdx, currentLogicStepIdx, agentStatus } = useLessonStore();
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const isPiping = input.includes('|');
   const isRedirecting = input.includes('>');
+  
+  const currentLesson = LESSONS[currentLessonIdx];
+  const currentLogicStep = currentLesson?.logicChain?.[currentLogicStepIdx] || null;
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -145,36 +149,40 @@ export const TerminalController = () => {
           </div>
         </div>
 
-        {/* Side File Tree (Visual) - Desktop Only */}
-        <div className={`w-64 border-l ${THEME.border} ${THEME.surface} p-4 hidden md:block overflow-y-auto scrollbar-hide`}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-sans">
-              Workspace
-            </h3>
-            <Maximize2 className="w-3 h-3 text-gray-600" />
+        {/* Side Panel (VFS or LogicFeed) */}
+        {currentBlockId === 'B3' ? (
+          <LogicFeed currentStep={currentLogicStep} status={agentStatus} />
+        ) : (
+          <div className={`w-64 border-l ${THEME.border} ${THEME.surface} p-4 hidden md:block overflow-y-auto scrollbar-hide`}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-sans">
+                Workspace
+              </h3>
+              <Maximize2 className="w-3 h-3 text-gray-600" />
+            </div>
+            <div className="space-y-1">
+              {Object.entries(vfs).sort((a, b) => a[0].localeCompare(b[0])).map(([path, data]) => {
+                const depth = path.split('/').filter(Boolean).length;
+                const name = path.split('/').pop() || '/';
+                return (
+                  <div key={path} className="flex items-center gap-2 py-1 px-2 rounded hover:bg-white/5 cursor-default transition-all group" style={{ marginLeft: `${depth * 12}px` }}>
+                    {data.type === 'dir' ? (
+                      <div className="relative">
+                        <FolderTree className="w-4 h-4 text-[#00D1FF] opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-[#00FF9F] opacity-0 group-hover:opacity-20 blur-[4px] rounded-full animate-pulse"></div>
+                      </div>
+                    ) : (
+                      <FileText className="w-4 h-4 text-gray-500 group-hover:text-[#00FF9F] transition-colors" />
+                    )}
+                    <span className={`text-xs transition-colors ${data.type === 'dir' ? 'font-medium text-[#00D1FF] group-hover:text-[#00FF9F]' : 'text-gray-400 group-hover:text-white'}`}>
+                      {name}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div className="space-y-1">
-            {Object.entries(vfs).sort((a, b) => a[0].localeCompare(b[0])).map(([path, data]) => {
-              const depth = path.split('/').filter(Boolean).length;
-              const name = path.split('/').pop() || '/';
-              return (
-                <div key={path} className="flex items-center gap-2 py-1 px-2 rounded hover:bg-white/5 cursor-default transition-all group" style={{ marginLeft: `${depth * 12}px` }}>
-                  {data.type === 'dir' ? (
-                    <div className="relative">
-                      <FolderTree className="w-4 h-4 text-[#00D1FF] opacity-60 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute inset-0 bg-[#00FF9F] opacity-0 group-hover:opacity-20 blur-[4px] rounded-full animate-pulse"></div>
-                    </div>
-                  ) : (
-                    <FileText className="w-4 h-4 text-gray-500 group-hover:text-[#00FF9F] transition-colors" />
-                  )}
-                  <span className={`text-xs transition-colors ${data.type === 'dir' ? 'font-medium text-[#00D1FF] group-hover:text-[#00FF9F]' : 'text-gray-400 group-hover:text-white'}`}>
-                    {name}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Footer Status Bar */}

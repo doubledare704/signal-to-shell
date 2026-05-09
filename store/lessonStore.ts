@@ -9,6 +9,17 @@ export interface SubTask {
   hint: string;
 }
 
+export type AgentStatus = 'THINKING' | 'WAITING' | 'SUCCESS' | 'ERROR';
+
+export interface LogicStep {
+  step: number;
+  ai_thought: string;
+  expected_action_type: string;
+  required_command: string;
+  hint: string;
+  on_success: string;
+}
+
 export interface Lesson {
   id: string;
   blockId: string;
@@ -16,6 +27,7 @@ export interface Lesson {
   description: string;
   example?: string;
   tasks: SubTask[];
+  logicChain?: LogicStep[];
   feedback: {
     success: string;
   };
@@ -366,6 +378,133 @@ export const LESSONS: Lesson[] = [
     feedback: {
       success: "✓ AUDIT_COMPLETE. All nodes verified. Block 2 finalized."
     }
+  },
+  {
+    id: "L3-1-REACT",
+    blockId: "B3",
+    title: "Lesson 3.1: The ReAct Loop",
+    description: "Expectation is taking its toll, Architect. Before an agent can change the world, it must perceive it. You are now the 'Observations' for the AI's 'Actions'.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Feed the agent the sensory input it needs. Complete the ReAct loop by providing observations.",
+        validate: (vfs, history, currentPath) => {
+          // This lesson is validated via the special logic in TerminalController/LogicFeed
+          const state = useLessonStore.getState();
+          return state.currentLogicStepIdx >= 2 && state.agentStatus === 'SUCCESS';
+        },
+        hint: "Follow the Agent Logic feed on the right. Provide the exact commands it expects."
+      }
+    ],
+    logicChain: [
+      {
+        step: 1,
+        ai_thought: "THOUGHT: I am initialized in a new nexus. I must map the infrastructure to understand the available state.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "ls",
+        hint: "The agent is blind. Use 'ls' to provide sensory input of the root directory.",
+        on_success: "OBSERVATION: Root directory mapped. I see main.py, STS.md, and logs/."
+      },
+      {
+        step: 2,
+        ai_thought: "THOUGHT: The directory structure is clear. Now I must verify the core logic. Show me the contents of the primary execution file.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "cat main.py",
+        hint: "The agent needs to 'read' the code. Use 'cat' to stream the content of main.py.",
+        on_success: "OBSERVATION: main.py content ingested. The signal is simple but stable."
+      },
+      {
+        step: 3,
+        ai_thought: "THOUGHT: I detect a potential constraint conflict. I need to audit the 'Brain File' to ensure my actions align with the Architect's rules.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "cat STS.md",
+        hint: "The agent is questioning its boundaries. Feed it the STS.md file.",
+        on_success: "OBSERVATION: Constraints identified. I am bound by the Senior Architect persona."
+      }
+    ],
+    feedback: {
+      success: "✓ SIGNAL_SYNCHRONIZED. The ReAct loop is closed. You have successfully fed the mind."
+    }
+  },
+  {
+    id: "L3-2-BRAIN",
+    blockId: "B3",
+    title: "Lesson 3.2: The State Architect",
+    description: "An agent is only as good as its constraints. You must now define the persona and rules in the Brain File (STS.md).",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Update 'STS.md' to include a '# Constraints' section with the rule: 'Always use recursive logic for file scanning'.",
+        validate: (vfs, history, currentPath) => {
+          const file = vfs['/STS.md'] as FileNode;
+          return file?.content.includes('# Constraints') && file?.content.includes('Always use recursive logic');
+        },
+        hint: "Use redirection to update the file. Example: 'echo \"# Constraints\\nAlways use...\" >> STS.md'"
+      }
+    ],
+    feedback: {
+      success: "✓ BRAIN_MODIFIED. Constraints are now part of the agent's core memory."
+    }
+  },
+  {
+    id: "L3-3-SATURATION",
+    blockId: "B3",
+    title: "Lesson 3.3: Signal Saturation",
+    description: "The context window is a precious resource. Clean up the logs to prevent noise from drowning out the intelligence signal.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Clear the 'logs/debug.log' file to reclaim context tokens.",
+        validate: (vfs, history, currentPath) => {
+          const file = vfs['/logs/debug.log'] as FileNode;
+          return file?.content === '';
+        },
+        hint: "Empty the file contents. Example: 'echo \"\" > logs/debug.log'"
+      }
+    ],
+    feedback: {
+      success: "✓ CONTEXT_OPTIMIZED. Signal-to-noise ratio at maximum efficiency."
+    }
+  },
+  {
+    id: "L3-4-REFLECTION",
+    blockId: "B3",
+    title: "Lesson 3.4: The Reflection Protocol",
+    description: "Deep intelligence requires self-correction. Teach the agent to review its state and fix logical flaws before they propagate.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Force the agent to reflect. Execute the linter on 'main.py' and verify its integrity.",
+        validate: (vfs, history, currentPath) => {
+           const lastInput = history.filter(h => h.type === 'input').pop();
+           return !!lastInput?.content.includes('grep') && !!lastInput?.content.includes('main.py');
+        },
+        hint: "Verify the core signal. Example: 'grep print main.py'"
+      }
+    ],
+    feedback: {
+      success: "✓ REFLECTION_ACTIVE. The agent is now self-aware of its output quality."
+    }
+  },
+  {
+    id: "L3-5-FEWSHOT",
+    blockId: "B3",
+    title: "Lesson 3.5: Few-Shot Architectures",
+    description: "Lock in the pattern. Provide few-shot examples in the Brain File to ensure predictable infrastructure.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Add a '# Patterns' section to 'STS.md' with a code example matching the 'Perfect API Endpoint' pattern.",
+        validate: (vfs, history, currentPath) => {
+          const file = vfs['/STS.md'] as FileNode;
+          return file?.content.includes('# Patterns') && file?.content.includes('Perfect API Endpoint');
+        },
+        hint: "Document the pattern to enforce architectural stability. Example: 'echo \"# Patterns...\" >> STS.md'"
+      }
+    ],
+    feedback: {
+      success: "✓ PATTERN_LOCKED. Block 3 finalized. Agent discipline enforced."
+    }
   }
 ];
 
@@ -378,12 +517,16 @@ interface LessonStore {
   isDecrypting: boolean;
   view: 'dashboard' | 'lesson';
   currentBlockId: string;
+  agentStatus: AgentStatus;
+  currentLogicStepIdx: number;
   setCurrentLessonIdx: (idx: number) => void;
   setCurrentTaskIdx: (idx: number) => void;
   setIsSuccess: (success: boolean) => void;
   setIsDecrypting: (isDecrypting: boolean) => void;
   setView: (view: 'dashboard' | 'lesson') => void;
   setCurrentBlockId: (id: string) => void;
+  setAgentStatus: (status: AgentStatus) => void;
+  setCurrentLogicStepIdx: (idx: number) => void;
   nextLesson: () => void;
   jumpToLesson: (idx: number) => void;
   validateCurrentTask: (vfs: VFSState, history: VFSStore['history'], currentPath: string) => boolean;
@@ -400,6 +543,8 @@ export const useLessonStore = create<LessonStore>()(
       isDecrypting: false,
       view: 'dashboard',
       currentBlockId: 'B1',
+      agentStatus: 'THINKING',
+      currentLogicStepIdx: 0,
       setCurrentLessonIdx: (idx) => {
         const state = get();
         // Only allow selecting lessons that have been reached
@@ -417,7 +562,9 @@ export const useLessonStore = create<LessonStore>()(
             currentTaskIdx: 0,
             isSuccess: false,
             view: 'lesson',
-            isDecrypting: false
+            isDecrypting: false,
+            agentStatus: 'THINKING',
+            currentLogicStepIdx: 0
           });
         }
       },
@@ -436,6 +583,8 @@ export const useLessonStore = create<LessonStore>()(
       setIsDecrypting: (isDecrypting) => set({ isDecrypting }),
       setView: (view) => set({ view }),
       setCurrentBlockId: (id) => set({ currentBlockId: id }),
+      setAgentStatus: (status) => set({ agentStatus: status }),
+      setCurrentLogicStepIdx: (idx) => set({ currentLogicStepIdx: idx }),
       nextLesson: () => {
         const state = get();
         if (state.currentLessonIdx < LESSONS.length - 1) {
