@@ -185,7 +185,15 @@ export const useVFSStore = create<VFSStore>()(
         let pipeOutput = '';
 
         for (let i = 0; i < pipeCommands.length; i++) {
-          const [cmd, ...args] = pipeCommands[i].split(/\s+/);
+          const args: string[] = [];
+          const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
+          let match;
+          while ((match = regex.exec(pipeCommands[i])) !== null) {
+            args.push(match[1] || match[2] || match[0]);
+          }
+          const cmd = args.shift();
+          if (!cmd) continue;
+          
           let currentOutput = '';
 
           switch (cmd) {
