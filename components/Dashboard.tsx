@@ -14,22 +14,14 @@ const THEME = {
 };
 
 export const Dashboard = () => {
-  const { currentLessonIdx, maxLessonIdx, setView, setCurrentLessonIdx } = useLessonStore();
+  const { currentLessonIdx, completedLessonIds, setView, setCurrentLessonIdx } = useLessonStore();
 
   const getBlockProgress = (blockId: string) => {
-    const blockLessons = LESSONS.filter(l => l.blockId === blockId);
-    if (blockLessons.length === 0) return 0;
+    const blockLessonIds = LESSONS.filter(l => l.blockId === blockId).map(l => l.id);
+    if (blockLessonIds.length === 0) return 0;
     
-    // Use maxLessonIdx to ensure progress doesn't reset when visiting old lessons
-    const lastLessonIdxInBlock = LESSONS.map((l, i) => l.blockId === blockId ? i : -1).reduce((a, b) => Math.max(a, b), -1);
-    const firstLessonIdxInBlock = LESSONS.findIndex(l => l.blockId === blockId);
-    
-    if (maxLessonIdx > lastLessonIdxInBlock) return 100;
-    if (maxLessonIdx < firstLessonIdxInBlock) return 0;
-    
-    const total = blockLessons.length;
-    const completed = maxLessonIdx - firstLessonIdxInBlock;
-    return Math.floor((completed / total) * 100);
+    const completedInBlock = blockLessonIds.filter(id => completedLessonIds.includes(id)).length;
+    return Math.floor((completedInBlock / blockLessonIds.length) * 100);
   };
 
   return (
@@ -66,7 +58,7 @@ export const Dashboard = () => {
               <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${THEME.accentBg} shadow-[0_0_10px_#00FF9F]`} 
-                  style={{ width: `${Math.floor((maxLessonIdx / (LESSONS.length - 1)) * 100)}%` }}
+                  style={{ width: `${Math.floor((completedLessonIds.length / LESSONS.length) * 100)}%` }}
                 ></div>
               </div>
             </div>

@@ -248,6 +248,7 @@ export const LESSONS: Lesson[] = [
 interface LessonStore {
   currentLessonIdx: number;
   maxLessonIdx: number;
+  completedLessonIds: string[];
   currentTaskIdx: number;
   isSuccess: boolean;
   isDecrypting: boolean;
@@ -269,6 +270,7 @@ export const useLessonStore = create<LessonStore>()(
     (set, get) => ({
       currentLessonIdx: 0,
       maxLessonIdx: 0,
+      completedLessonIds: [],
       currentTaskIdx: 0,
       isSuccess: false,
       isDecrypting: false,
@@ -276,16 +278,35 @@ export const useLessonStore = create<LessonStore>()(
       currentBlockId: 'B1',
       setCurrentLessonIdx: (idx) => {
         const state = get();
+        // Mark all previous lessons as completed if we are jumping forward
+        const newCompleted = [...state.completedLessonIds];
+        for (let i = 0; i < idx; i++) {
+          const id = LESSONS[i].id;
+          if (!newCompleted.includes(id)) newCompleted.push(id);
+        }
+        
         set({ 
           currentLessonIdx: idx, 
+          maxLessonIdx: Math.max(state.maxLessonIdx, idx),
+          completedLessonIds: newCompleted,
           currentTaskIdx: 0, 
           isSuccess: false, 
           view: 'lesson',
-          maxLessonIdx: Math.max(state.maxLessonIdx, idx)
+          isDecrypting: false
         });
       },
       setCurrentTaskIdx: (idx) => set({ currentTaskIdx: idx }),
-      setIsSuccess: (success) => set({ isSuccess: success }),
+      setIsSuccess: (success) => {
+        const state = get();
+        let newCompleted = state.completedLessonIds;
+        if (success) {
+          const lessonId = LESSONS[state.currentLessonIdx].id;
+          if (!newCompleted.includes(lessonId)) {
+            newCompleted = [...newCompleted, lessonId];
+          }
+        }
+        set({ isSuccess: success, completedLessonIds: newCompleted });
+      },
       setIsDecrypting: (isDecrypting) => set({ isDecrypting }),
       setView: (view) => set({ view }),
       setCurrentBlockId: (id) => set({ currentBlockId: id }),
@@ -293,22 +314,41 @@ export const useLessonStore = create<LessonStore>()(
         const state = get();
         if (state.currentLessonIdx < LESSONS.length - 1) {
           const nextIdx = state.currentLessonIdx + 1;
+          const currentId = LESSONS[state.currentLessonIdx].id;
+          const newCompleted = state.completedLessonIds.includes(currentId) 
+            ? state.completedLessonIds 
+            : [...state.completedLessonIds, currentId];
+
           set({ 
             currentLessonIdx: nextIdx, 
             currentTaskIdx: 0, 
             isSuccess: false,
             maxLessonIdx: Math.max(state.maxLessonIdx, nextIdx),
+            completedLessonIds: newCompleted,
             isDecrypting: false,
           });
         }
       },
       jumpToLesson: (idx) => {
         if (idx >= 0 && idx < LESSONS.length) {
+          const state = get();
+          const newCompleted = [...state.completedLessonIds];
+          // If jumping forward, mark previous as completed
+          if (idx > state.currentLessonIdx) {
+            for (let i = 0; i < idx; i++) {
+              const id = LESSONS[i].id;
+              if (!newCompleted.includes(id)) newCompleted.push(id);
+            }
+          }
+          
           set({
             currentLessonIdx: idx,
+            maxLessonIdx: Math.max(state.maxLessonIdx, idx),
+            completedLessonIds: newCompleted,
             currentTaskIdx: 0,
             isSuccess: false,
             isDecrypting: false,
+            view: 'lesson' // Switch to lesson view when a lesson is picked
           });
         }
       },
@@ -321,17 +361,26 @@ export const useLessonStore = create<LessonStore>()(
         if (!currentTask) return false;
         
         if (currentTask.validate(vfs, history, currentPath)) {
-           // Task completed!
-           if (state.currentTaskIdx < currentLesson.tasks.length - 1) {
-              set({ currentTaskIdx: state.currentTaskIdx + 1 });
-              return false; // Not lesson complete, just task complete
-           } else {
-              // Lesson complete!
-              if (!state.isSuccess) {
-                 set({ isSuccess: true, isDecrypting: true });
-                 return true;
-              }
-           }
+          // Task completed!
+          if (state.currentTaskIdx < currentLesson.tasks.length - 1) {
+            set({ currentTaskIdx: state.currentTaskIdx + 1 });
+            return false; // Not lesson complete, just task complete
+          } else {
+            // Lesson complete!
+            if (!state.isSuccess) {
+              const lessonId = currentLesson.id;
+              const newCompleted = state.completedLessonIds.includes(lessonId)
+                ? state.completedLessonIds
+                : [...state.completedLessonIds, lessonId];
+                
+              set({ 
+                isSuccess: true, 
+                isDecrypting: true,
+                completedLessonIds: newCompleted 
+              });
+              return true;
+            }
+          }
         }
         return false;
       }
@@ -341,6 +390,7 @@ export const useLessonStore = create<LessonStore>()(
       partialize: (state) => ({ 
         currentLessonIdx: state.currentLessonIdx, 
         maxLessonIdx: state.maxLessonIdx,
+        completedLessonIds: state.completedLessonIds,
         currentTaskIdx: state.currentTaskIdx,
         view: state.view,
         currentBlockId: state.currentBlockId

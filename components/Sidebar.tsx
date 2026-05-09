@@ -18,7 +18,18 @@ const THEME = {
 };
 
 export const Sidebar = () => {
-  const { currentLessonIdx, currentTaskIdx, isSuccess, nextLesson, jumpToLesson, view, setView } = useLessonStore();
+  const { 
+    currentLessonIdx, 
+    currentTaskIdx, 
+    isSuccess, 
+    view, 
+    setView, 
+    nextLesson, 
+    jumpToLesson,
+    completedLessonIds
+  } = useLessonStore();
+
+  const isLastLesson = currentLessonIdx === LESSONS.length - 1;
   const vfs = useVFSStore((state) => state.vfs);
   const [decryptionComplete, setDecryptionComplete] = useState(false);
 
@@ -29,6 +40,8 @@ export const Sidebar = () => {
   }, [isSuccess]);
 
   const currentLesson = LESSONS[currentLessonIdx];
+  const isBlockComplete = LESSONS.filter(l => l.blockId === currentLesson.blockId)
+    .every(l => completedLessonIds.includes(l.id));
 
   return (
     <div className={`w-full md:w-1/3 flex flex-col border-r ${THEME.border} ${THEME.surface} font-sans`}>
@@ -123,11 +136,11 @@ export const Sidebar = () => {
           <>
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <span className={`px-2 py-0.5 rounded text-[10px] border border-[#00FF9F] ${THEME.accent} font-mono`}>
-                  LEVEL {currentLesson.id.toString().padStart(2, '0')}
+                <span className={`px-2 py-0.5 rounded text-[10px] border border-[#00FF9F] ${THEME.accent} font-mono uppercase tracking-widest`}>
+                  {completedLessonIds.includes(currentLesson.id) ? 'COMPLETED' : `LEVEL ${currentLesson.id.split('-')[0].replace('L', '')}`}
                 </span>
                 <h2 className="text-xl font-semibold tracking-tight font-[family-name:var(--font-rajdhani)]">
-                  {currentLesson.title}
+                  {currentLesson.title.split(': ')[1] || currentLesson.title}
                 </h2>
               </div>
 
@@ -191,12 +204,30 @@ export const Sidebar = () => {
                   </div>
                   
                   {decryptionComplete && (
-                    <button
-                      onClick={nextLesson}
-                      className={`animate-in slide-in-from-bottom-2 fade-in duration-300 w-full py-2 ${THEME.accentBg} text-black font-bold uppercase tracking-tighter text-xs hover:shadow-[0_0_15px_#00FF9F] transition-all font-[family-name:var(--font-rajdhani)] text-sm`}
-                    >
-                      Proceed to Next Node
-                    </button>
+                    <div className="space-y-3 animate-in slide-in-from-bottom-2 fade-in duration-500">
+                      <button
+                        onClick={() => {
+                          if (isLastLesson) {
+                            setView('dashboard');
+                          } else {
+                            nextLesson();
+                          }
+                        }}
+                        className={`w-full py-3 ${THEME.accentBg} text-black font-bold uppercase tracking-tighter text-xs hover:shadow-[0_0_20px_#00FF9F] transition-all font-[family-name:var(--font-rajdhani)] text-sm flex items-center justify-center gap-2`}
+                      >
+                        {isLastLesson ? 'Finish Block & Return to Nexus' : 'Proceed to Next Node'}
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                      
+                      {isLastLesson && (
+                        <button
+                          onClick={() => setView('dashboard')}
+                          className="w-full py-2 bg-white/5 border border-white/10 text-gray-400 font-bold uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all font-mono"
+                        >
+                          View Deployment Phases
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -237,7 +268,7 @@ export const Sidebar = () => {
                         </span>
                       )}
                     </div>
-                    {i < currentLessonIdx && (
+                    {completedLessonIds.includes(l.id) && (
                       <CheckCircle2 className={`w-3 h-3 ml-auto ${THEME.accent}`} />
                     )}
                   </div>
