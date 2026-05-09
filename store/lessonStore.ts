@@ -11,6 +11,7 @@ export interface SubTask {
 
 export interface Lesson {
   id: string;
+  blockId: string;
   title: string;
   description: string;
   example?: string;
@@ -20,9 +21,50 @@ export interface Lesson {
   };
 }
 
+export interface Block {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+}
+
+export const BLOCKS: Block[] = [
+  { 
+    id: "B1", 
+    title: "Block 1: Expectation", 
+    subtitle: "The Atomic State (Foundation)", 
+    description: "“Expectation is taking its toll...” Establish the foundation of the digital nexus." 
+  },
+  { 
+    id: "B2", 
+    title: "Block 2: Let It Happen", 
+    subtitle: "The Command Stream (Control)", 
+    description: "“All this running around... let it happen.” Master the flow of terminal signals." 
+  },
+  { 
+    id: "B3", 
+    title: "Block 3: Mind Mischief", 
+    subtitle: "The Intelligence Signal (Theory)", 
+    description: "“She remembers my name... but she’s only messing around.” Learn the logic of the AI loop." 
+  },
+  { 
+    id: "B4", 
+    title: "Block 4: The Moment", 
+    subtitle: "The Gemini Protocol (Scale)", 
+    description: "“In the end, it’s eventual... and it’s right on time.” Experience the protocol at scale." 
+  },
+  { 
+    id: "B5", 
+    title: "Block 5: Tomorrow's Dust", 
+    subtitle: "Agentic Orchestration (Mastery)", 
+    description: "“There's no use in lying... it's the air that I breathe.” Architect autonomous systems." 
+  }
+];
+
 export const LESSONS: Lesson[] = [
   {
     id: "L1-PWD",
+    blockId: "B1",
     title: "Lesson 1: The 'pwd' Command",
     description: "Welcome, Operative. Your first task is to understand where you are. The `pwd` (print working directory) command outputs the absolute path of the current directory.",
     example: "pwd",
@@ -44,6 +86,7 @@ export const LESSONS: Lesson[] = [
   },
   {
     id: "L2-LS",
+    blockId: "B1",
     title: "Lesson 2: The 'ls' Command",
     description: "Now that you know where you are, let's see what is around you. The `ls` (list) command shows the contents of the current directory.",
     example: "ls",
@@ -64,6 +107,7 @@ export const LESSONS: Lesson[] = [
   },
   {
     id: "L3-CD",
+    blockId: "B1",
     title: "Lesson 3: The 'cd' Command",
     description: "You see the 'cyber-nexus' directory. Let's enter it. The `cd` (change directory) command allows you to navigate the file system.",
     example: "cd cyber-nexus",
@@ -83,6 +127,7 @@ export const LESSONS: Lesson[] = [
   },
   {
     id: "L4-MKDIR",
+    blockId: "B1",
     title: "Lesson 4: The 'mkdir' Command",
     description: "An operative needs a place to store data. The `mkdir` (make directory) command creates a new folder.",
     example: "mkdir logs",
@@ -102,6 +147,7 @@ export const LESSONS: Lesson[] = [
   },
   {
     id: "L5-TOUCH",
+    blockId: "B1",
     title: "Lesson 5: The 'touch' Command",
     description: "Let's create an empty file. The `touch` command creates a new, empty file if it doesn't exist.",
     example: "touch session.log",
@@ -129,6 +175,7 @@ export const LESSONS: Lesson[] = [
   },
   {
     id: "L6-RM",
+    blockId: "B1",
     title: "Lesson 6: The 'rm' Command",
     description: "Sometimes data needs to be purged. The `rm` (remove) command deletes files.",
     example: "rm session.log",
@@ -150,6 +197,7 @@ export const LESSONS: Lesson[] = [
   },
   {
     id: "L7-CP",
+    blockId: "B1",
     title: "Lesson 7: The 'cp' Command",
     description: "Let's back up some data. The `cp` (copy) command copies files or directories.",
     example: "cp README.md README-backup.md",
@@ -177,6 +225,7 @@ export const LESSONS: Lesson[] = [
   },
   {
     id: "L8-MV",
+    blockId: "B1",
     title: "Lesson 8: The 'mv' Command",
     description: "Sometimes files need a new name or location. The `mv` (move) command renames or moves files.",
     example: "mv README-backup.md README-old.md",
@@ -198,13 +247,18 @@ export const LESSONS: Lesson[] = [
 
 interface LessonStore {
   currentLessonIdx: number;
+  maxLessonIdx: number;
   currentTaskIdx: number;
   isSuccess: boolean;
   isDecrypting: boolean;
+  view: 'dashboard' | 'lesson';
+  currentBlockId: string;
   setCurrentLessonIdx: (idx: number) => void;
   setCurrentTaskIdx: (idx: number) => void;
   setIsSuccess: (success: boolean) => void;
   setIsDecrypting: (isDecrypting: boolean) => void;
+  setView: (view: 'dashboard' | 'lesson') => void;
+  setCurrentBlockId: (id: string) => void;
   nextLesson: () => void;
   jumpToLesson: (idx: number) => void;
   validateCurrentTask: (vfs: VFSState, history: VFSStore['history'], currentPath: string) => boolean;
@@ -214,20 +268,36 @@ export const useLessonStore = create<LessonStore>()(
   persist(
     (set, get) => ({
       currentLessonIdx: 0,
+      maxLessonIdx: 0,
       currentTaskIdx: 0,
       isSuccess: false,
       isDecrypting: false,
-      setCurrentLessonIdx: (idx) => set({ currentLessonIdx: idx, currentTaskIdx: 0, isSuccess: false }),
+      view: 'dashboard',
+      currentBlockId: 'B1',
+      setCurrentLessonIdx: (idx) => {
+        const state = get();
+        set({ 
+          currentLessonIdx: idx, 
+          currentTaskIdx: 0, 
+          isSuccess: false, 
+          view: 'lesson',
+          maxLessonIdx: Math.max(state.maxLessonIdx, idx)
+        });
+      },
       setCurrentTaskIdx: (idx) => set({ currentTaskIdx: idx }),
       setIsSuccess: (success) => set({ isSuccess: success }),
       setIsDecrypting: (isDecrypting) => set({ isDecrypting }),
+      setView: (view) => set({ view }),
+      setCurrentBlockId: (id) => set({ currentBlockId: id }),
       nextLesson: () => {
         const state = get();
         if (state.currentLessonIdx < LESSONS.length - 1) {
-          set({
-            currentLessonIdx: state.currentLessonIdx + 1,
-            currentTaskIdx: 0,
+          const nextIdx = state.currentLessonIdx + 1;
+          set({ 
+            currentLessonIdx: nextIdx, 
+            currentTaskIdx: 0, 
             isSuccess: false,
+            maxLessonIdx: Math.max(state.maxLessonIdx, nextIdx),
             isDecrypting: false,
           });
         }
@@ -268,7 +338,13 @@ export const useLessonStore = create<LessonStore>()(
     }),
     {
       name: 'signal-shell-lesson',
-      partialize: (state) => ({ currentLessonIdx: state.currentLessonIdx, currentTaskIdx: state.currentTaskIdx }),
+      partialize: (state) => ({ 
+        currentLessonIdx: state.currentLessonIdx, 
+        maxLessonIdx: state.maxLessonIdx,
+        currentTaskIdx: state.currentTaskIdx,
+        view: state.view,
+        currentBlockId: state.currentBlockId
+      }),
     }
   )
 );

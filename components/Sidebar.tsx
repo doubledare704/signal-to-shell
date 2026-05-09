@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Command, CheckCircle2, FolderTree, FileText, Maximize2 } from 'lucide-react';
-import { useLessonStore, LESSONS } from '../store/lessonStore';
+import { Settings, Command, CheckCircle2, FolderTree, FileText, LayoutGrid, ArrowLeft } from 'lucide-react';
+import { useLessonStore, LESSONS, BLOCKS } from '../store/lessonStore';
 import { useVFSStore } from '../store/vfsStore';
 import DecryptText from './DecryptText';
 
@@ -18,7 +18,7 @@ const THEME = {
 };
 
 export const Sidebar = () => {
-  const { currentLessonIdx, currentTaskIdx, isSuccess, nextLesson, jumpToLesson } = useLessonStore();
+  const { currentLessonIdx, currentTaskIdx, isSuccess, nextLesson, jumpToLesson, view, setView } = useLessonStore();
   const vfs = useVFSStore((state) => state.vfs);
   const [decryptionComplete, setDecryptionComplete] = useState(false);
 
@@ -33,13 +33,27 @@ export const Sidebar = () => {
   return (
     <div className={`w-full md:w-1/3 flex flex-col border-r ${THEME.border} ${THEME.surface} font-sans`}>
       <div className={`p-6 border-b ${THEME.border} flex items-center justify-between`}>
-        <div className="flex items-center gap-2">
+        <div 
+          className="flex items-center gap-2 cursor-pointer group"
+          onClick={() => setView('dashboard')}
+        >
           <div className={`w-3 h-3 rounded-full ${THEME.accentBg} animate-pulse shadow-[0_0_8px_#00FF9F]`}></div>
-          <h1 className="font-bold tracking-widest text-lg uppercase font-[family-name:var(--font-orbitron)]">
+          <h1 className="font-bold tracking-widest text-lg uppercase font-[family-name:var(--font-orbitron)] group-hover:text-[#00FF9F] transition-colors">
             Signal to <span className={THEME.accent}>shell</span>
           </h1>
         </div>
-        <Settings className="w-4 h-4 text-gray-600 cursor-pointer hover:text-white transition-colors" />
+        <div className="flex items-center gap-4">
+          {view === 'lesson' && (
+            <button 
+              onClick={() => setView('dashboard')}
+              className="text-gray-600 hover:text-white transition-colors"
+              title="Dashboard"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          )}
+          <Settings className="w-4 h-4 text-gray-600 cursor-pointer hover:text-white transition-colors" />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
@@ -150,26 +164,46 @@ export const Sidebar = () => {
         </div>
 
         <div className="space-y-2 pt-8">
-          <p className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em] mb-4">
-            Course Progress
-          </p>
-          {LESSONS.map((l, i) => (
-            <div
-              key={l.id}
-              onClick={() => {
-                jumpToLesson(i);
-              }}
-              className={`flex items-center gap-3 p-2 rounded transition-colors cursor-pointer hover:bg-white/10 ${i === currentLessonIdx ? 'bg-white/5' : i < currentLessonIdx ? 'opacity-70' : 'opacity-40'}`}
-            >
-              <span className={`text-xs font-mono ${i <= currentLessonIdx ? THEME.accent : 'text-gray-600'}`}>
-                {l.id.toString().padStart(2, '0')}
-              </span>
-              <span className="text-sm font-[family-name:var(--font-rajdhani)]">{l.title}</span>
-              {i < currentLessonIdx && (
-                <CheckCircle2 className={`w-3 h-3 ml-auto ${THEME.accent}`} />
-              )}
-            </div>
-          ))}
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em]">
+              Course Progress
+            </p>
+            {view === 'lesson' && (
+              <button 
+                onClick={() => setView('dashboard')}
+                className={`text-[10px] font-bold ${THEME.accent} uppercase tracking-widest flex items-center gap-1 hover:opacity-80 transition-opacity`}
+              >
+                <ArrowLeft className="w-3 h-3" /> Dashboard
+              </button>
+            )}
+          </div>
+          {LESSONS.map((l, i) => {
+            const block = BLOCKS.find(b => b.id === l.blockId);
+            return (
+              <div
+                key={l.id}
+                onClick={() => {
+                  jumpToLesson(i);
+                }}
+                className={`flex items-center gap-3 p-2 rounded transition-colors cursor-pointer hover:bg-white/10 ${i === currentLessonIdx ? 'bg-white/5 border border-[#00FF9F]/20' : i < currentLessonIdx ? 'opacity-70' : 'opacity-40'}`}
+              >
+                <span className={`text-xs font-mono ${i <= currentLessonIdx ? THEME.accent : 'text-gray-600'}`}>
+                  {l.id.toString().padStart(2, '0')}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-[family-name:var(--font-rajdhani)] font-medium">{l.title}</span>
+                  {i === currentLessonIdx && (
+                    <span className="text-[9px] text-[#00FF9F]/50 uppercase tracking-widest font-mono">
+                      {block?.subtitle}
+                    </span>
+                  )}
+                </div>
+                {i < currentLessonIdx && (
+                  <CheckCircle2 className={`w-3 h-3 ml-auto ${THEME.accent}`} />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
