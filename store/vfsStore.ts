@@ -208,13 +208,20 @@ export const useVFSStore = create<VFSStore>()(
           return;
         }
 
-        // Handle redirection
         let actualInput = rawInput;
         let redirectTarget: string | null = null;
-        if (rawInput.includes('>')) {
+        let isAppend = false;
+
+        if (rawInput.includes('>>')) {
+          const parts = rawInput.split('>>');
+          actualInput = parts[0].trim();
+          redirectTarget = parts[1].trim();
+          isAppend = true;
+        } else if (rawInput.includes('>')) {
           const parts = rawInput.split('>');
           actualInput = parts[0].trim();
           redirectTarget = parts[1].trim();
+          isAppend = false;
         }
 
         // Handle pipes
@@ -236,6 +243,9 @@ export const useVFSStore = create<VFSStore>()(
           switch (cmd) {
             case 'pwd':
               currentOutput = currentPath;
+              break;
+            case 'echo':
+              currentOutput = args.join(' ').replace(/^["']|["']$/g, '');
               break;
             case 'ls': {
               const recursive = args.includes('-R');
@@ -489,7 +499,7 @@ export const useVFSStore = create<VFSStore>()(
               set({ history: [] });
               return;
             case 'help':
-              currentOutput = 'Available commands: pwd, ls, cd, mkdir, touch, rm, cp, mv, cat, grep, wc, sort, find, clear, help';
+              currentOutput = 'Available commands: pwd, ls, cd, mkdir, touch, rm, cp, mv, cat, grep, wc, sort, find, echo, clear, help';
               break;
             default:
               currentOutput = `command not found: ${cmd}`;
@@ -504,8 +514,14 @@ export const useVFSStore = create<VFSStore>()(
           const fileName = parts.pop()!;
           const parentPath = '/' + parts.join('/');
           const parent = newVfs[parentPath];
+          
           if (parent && parent.type === 'dir') {
-            newVfs[fullPath] = { type: 'file', content: pipeOutput };
+            const existingNode = newVfs[fullPath] as FileNode;
+            const newContent = (isAppend && existingNode) 
+              ? (existingNode.content + '\n' + pipeOutput)
+              : pipeOutput;
+
+            newVfs[fullPath] = { type: 'file', content: newContent };
             if (!parent.children.includes(fileName)) {
               newVfs[parentPath] = { ...parent, children: [...parent.children, fileName] };
             }

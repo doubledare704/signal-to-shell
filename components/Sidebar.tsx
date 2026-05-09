@@ -271,28 +271,30 @@ export const Sidebar = () => {
                   </button>
                 )}
               </div>
-              {LESSONS.map((l, i) => {
+              {LESSONS.filter(l => l.blockId === currentLesson.blockId).map((l) => {
+                const globalIdx = LESSONS.findIndex(orig => orig.id === l.id);
                 const block = BLOCKS.find(b => b.id === l.blockId);
-                const isLocked = i > maxLessonIdx;
+                const isLocked = globalIdx > maxLessonIdx;
+                const isActive = globalIdx === currentLessonIdx;
                 
                 return (
                   <div
                     key={l.id}
                     onClick={() => {
-                      if (!isLocked) jumpToLesson(i);
+                      if (!isLocked) jumpToLesson(globalIdx);
                     }}
                     className={`flex items-center gap-3 p-2 rounded transition-colors ${
                       isLocked ? 'cursor-not-allowed opacity-30' : 'cursor-pointer hover:bg-white/10'
-                    } ${i === currentLessonIdx ? 'bg-white/5 border border-[#00FF9F]/20' : ''}`}
+                    } ${isActive ? 'bg-white/5 border border-[#00FF9F]/20' : ''}`}
                   >
-                    <span className={`text-xs font-mono ${i <= currentLessonIdx ? THEME.accent : 'text-gray-600'}`}>
-                      {l.id.toString().padStart(2, '0')}
+                    <span className={`text-[10px] font-mono ${globalIdx <= currentLessonIdx ? THEME.accent : 'text-gray-600'}`}>
+                      {l.id.replace('L', '')}
                     </span>
                     <div className="flex flex-col flex-1">
                       <span className="text-sm font-[family-name:var(--font-rajdhani)] font-medium">
                         {l.title.split(': ')[1] || l.title}
                       </span>
-                      {i === currentLessonIdx && (
+                      {isActive && (
                         <span className="text-[9px] text-[#00FF9F]/50 uppercase tracking-widest font-mono">
                           {block?.subtitle}
                         </span>
