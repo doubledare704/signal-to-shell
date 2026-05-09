@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@theme {
+  --font-orbitron: "Orbitron", sans-serif;
+  --font-rajdhani: "Rajdhani", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-inter: "Inter", sans-serif;
+}
+
+@layer base {
+  :root {
+    --color-matrix: #00FF9F;
+    --color-pink: #FF00FF;
+    --color-blue: #00D1FF;
+    --bg-void: #050505;
+  }
+
+  body {
+    background-color: var(--bg-void);
+    color: white;
+    font-family: var(--font-inter);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .signal-shell-panel {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid #1A1A1A;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .crt-overlay {
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+      linear-gradient(
+        90deg,
+        rgba(255, 0, 0, 0.06),
+        rgba(0, 255, 0, 0.02),
+        rgba(0, 0, 255, 0.06)
+      );
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.05;
+    z-index: 100;
+  }
+
+  .scanline-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(0, 255, 159, 0.1);
+    animation: scanline 8s linear infinite;
+    pointer-events: none;
+  }
+
+  .glow-green {
+    box-shadow: 0 0 10px rgba(0, 255, 159, 0.3);
+  }
+
+  .glow-pink {
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+.animate-shake {
+  animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+}
