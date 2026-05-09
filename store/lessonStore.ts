@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { VFSState, VFSStore } from './vfsStore';
+import { DirNode, FileNode, VFSState, VFSStore, useVFSStore } from './vfsStore';
 
 export interface SubTask {
   id: string;
@@ -29,35 +29,35 @@ export interface Block {
 }
 
 export const BLOCKS: Block[] = [
-  { 
-    id: "B1", 
-    title: "Block 1: Expectation", 
-    subtitle: "The Atomic State (Foundation)", 
-    description: "“Expectation is taking its toll...” Establish the foundation of the digital nexus." 
+  {
+    id: "B1",
+    title: "Block 1: Expectation",
+    subtitle: "The Atomic State (Foundation)",
+    description: "“Expectation is taking its toll...” Establish the foundation of the digital nexus."
   },
-  { 
-    id: "B2", 
-    title: "Block 2: Let It Happen", 
-    subtitle: "The Command Stream (Control)", 
-    description: "“All this running around... let it happen.” Master the flow of terminal signals." 
+  {
+    id: "B2",
+    title: "Block 2: Let It Happen",
+    subtitle: "The Command Stream (Control)",
+    description: "“All this running around... let it happen.” Master the flow of terminal signals."
   },
-  { 
-    id: "B3", 
-    title: "Block 3: Mind Mischief", 
-    subtitle: "The Intelligence Signal (Theory)", 
-    description: "“She remembers my name... but she’s only messing around.” Learn the logic of the AI loop." 
+  {
+    id: "B3",
+    title: "Block 3: Mind Mischief",
+    subtitle: "The Intelligence Signal (Theory)",
+    description: "“She remembers my name... but she’s only messing around.” Learn the logic of the AI loop."
   },
-  { 
-    id: "B4", 
-    title: "Block 4: The Moment", 
-    subtitle: "The Gemini Protocol (Scale)", 
-    description: "“In the end, it’s eventual... and it’s right on time.” Experience the protocol at scale." 
+  {
+    id: "B4",
+    title: "Block 4: The Moment",
+    subtitle: "The Gemini Protocol (Scale)",
+    description: "“In the end, it’s eventual... and it’s right on time.” Experience the protocol at scale."
   },
-  { 
-    id: "B5", 
-    title: "Block 5: Tomorrow's Dust", 
-    subtitle: "Agentic Orchestration (Mastery)", 
-    description: "“There's no use in lying... it's the air that I breathe.” Architect autonomous systems." 
+  {
+    id: "B5",
+    title: "Block 5: Tomorrow's Dust",
+    subtitle: "Agentic Orchestration (Mastery)",
+    description: "“There's no use in lying... it's the air that I breathe.” Architect autonomous systems."
   }
 ];
 
@@ -242,6 +242,80 @@ export const LESSONS: Lesson[] = [
     feedback: {
       success: "✓ FILE_RENAMED. The basic training is now complete, Operative."
     }
+  },
+  {
+    id: "L2-1-SENSORY",
+    blockId: "B2",
+    title: "Lesson 2.1: Sensory Input",
+    description: "Master the art of environmental scanning. In complex systems, you must visualize the entire hierarchy to understand the state. Use recursive tools to map the nexus.",
+    example: "find /src | wc -l",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Identify the deepest nested file in the '/src' directory and output its line count using a pipe.",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history[history.length - 1];
+          const lastInput = history.filter(h => h.type === 'input').pop();
+          // Check for find/ls -R and wc -l in a pipe
+          const isPipe = lastInput?.content.includes('|') && lastInput?.content.includes('wc -l');
+          const isTarget = lastInput?.content.includes('api.py');
+          const correctCount = lastOutput?.content === '11';
+          return !!(isPipe && isTarget && correctCount);
+        },
+        hint: "Discover the architecture's depth and quantify its complexity. Example: 'find . -name \"*.txt\" | wc -l'"
+      }
+    ],
+    feedback: {
+      success: "✓ SCAN_COMPLETE. Deep state context acquired."
+    }
+  },
+  {
+    id: "L2-2-STRUCTURAL",
+    blockId: "B2",
+    title: "Lesson 2.2: Structural Integrity",
+    description: "Legacy code is noise. Mutate the file system architecture to align with modern standards. Follow the 'MIGRATION.md' spec to reorganize the nexus.",
+    example: "mkdir -p core/models && mv legacy/user.py core/models/",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Reorganize the '/legacy' folder into a modern '/core' structure as defined in 'MIGRATION.md'.",
+        validate: (vfs, history, currentPath) => {
+          const hasUser = vfs['/core/models/user.py']?.type === 'file';
+          const hasApi = vfs['/core/api/v1.py']?.type === 'file';
+          const legacyEmpty = vfs['/legacy']?.type === 'dir' && (vfs['/legacy'] as DirNode).children.length === 0;
+          return hasUser && hasApi && legacyEmpty;
+        },
+        hint: "Restructure the system using recursive creation and relocation. Example: 'mkdir -p project/src && mv old.js project/src/'"
+      }
+    ],
+    feedback: {
+      success: "✓ ARCHITECTURE_MUTATED. Structural integrity verified."
+    }
+  },
+  {
+    id: "L2-3-FILTER",
+    blockId: "B2",
+    title: "Lesson 2.3: Noise Reduction",
+    description: "The system is flooded with noise. Distill the data stream to find critical errors. Use pipes, filters, and redirection to archive the signal.",
+    example: "grep ERROR system.log | sort > errors.log",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Extract all lines containing 'ERROR_404' from 'system.log', sort them by timestamp, and save to 'distilled_errors.log'.",
+        validate: (vfs, history, currentPath) => {
+          const file = vfs['/distilled_errors.log'] as FileNode;
+          if (!file) return false;
+          const lines = file.content.split('\n').filter(Boolean);
+          const hasErrors = lines.every(l => l.includes('ERROR_404'));
+          const isSorted = lines.length === 3 && lines[0].includes('sector 7') && lines[2].includes('detected');
+          return hasErrors && isSorted;
+        },
+        hint: "Filter, organize, and archive specific signal patterns. Example: 'cat app.log | grep WARN | sort > results.txt'"
+      }
+    ],
+    feedback: {
+      success: "✓ SIGNAL_DISTILLED. Decryption protocol initiated. YOU ARE NOW READY TO INTERACT WITH THE INTELLIGENCE SIGNAL."
+    }
   }
 ];
 
@@ -280,10 +354,18 @@ export const useLessonStore = create<LessonStore>()(
         const state = get();
         // Only allow selecting lessons that have been reached
         if (idx >= 0 && idx <= state.maxLessonIdx && idx < LESSONS.length) {
-          set({ 
-            currentLessonIdx: idx, 
-            currentTaskIdx: 0, 
-            isSuccess: false, 
+          const lesson = LESSONS[idx];
+          // Sync VFS if block changed
+          const vfsStore = (useVFSStore as any).getState();
+          if (vfsStore.currentBlockId !== lesson.blockId) {
+            vfsStore.initializeForBlock(lesson.blockId);
+          }
+
+          set({
+            currentLessonIdx: idx,
+            currentBlockId: lesson.blockId,
+            currentTaskIdx: 0,
+            isSuccess: false,
             view: 'lesson',
             isDecrypting: false
           });
@@ -309,13 +391,21 @@ export const useLessonStore = create<LessonStore>()(
         if (state.currentLessonIdx < LESSONS.length - 1) {
           const nextIdx = state.currentLessonIdx + 1;
           const currentId = LESSONS[state.currentLessonIdx].id;
-          const newCompleted = state.completedLessonIds.includes(currentId) 
-            ? state.completedLessonIds 
+          const newCompleted = state.completedLessonIds.includes(currentId)
+            ? state.completedLessonIds
             : [...state.completedLessonIds, currentId];
 
-          set({ 
-            currentLessonIdx: nextIdx, 
-            currentTaskIdx: 0, 
+          const nextLesson = LESSONS[nextIdx];
+          // Sync VFS if block changed
+          const vfsStore = (useVFSStore as any).getState();
+          if (vfsStore.currentBlockId !== nextLesson.blockId) {
+            vfsStore.initializeForBlock(nextLesson.blockId);
+          }
+
+          set({
+            currentLessonIdx: nextIdx,
+            currentBlockId: nextLesson.blockId,
+            currentTaskIdx: 0,
             isSuccess: false,
             maxLessonIdx: Math.max(state.maxLessonIdx, nextIdx),
             completedLessonIds: newCompleted,
@@ -327,8 +417,16 @@ export const useLessonStore = create<LessonStore>()(
         const state = get();
         // Only allow jumping back to completed lessons or the current furthest reached lesson
         if (idx >= 0 && idx <= state.maxLessonIdx && idx < LESSONS.length) {
+          const lesson = LESSONS[idx];
+          // Sync VFS if block changed
+          const vfsStore = (useVFSStore as any).getState();
+          if (vfsStore.currentBlockId !== lesson.blockId) {
+            vfsStore.initializeForBlock(lesson.blockId);
+          }
+
           set({
             currentLessonIdx: idx,
+            currentBlockId: lesson.blockId,
             currentTaskIdx: 0,
             isSuccess: false,
             isDecrypting: false,
@@ -340,10 +438,10 @@ export const useLessonStore = create<LessonStore>()(
         const state = get();
         const currentLesson = LESSONS[state.currentLessonIdx];
         if (!currentLesson) return false;
-        
+
         const currentTask = currentLesson.tasks[state.currentTaskIdx];
         if (!currentTask) return false;
-        
+
         if (currentTask.validate(vfs, history, currentPath)) {
           // Task completed!
           if (state.currentTaskIdx < currentLesson.tasks.length - 1) {
@@ -356,9 +454,9 @@ export const useLessonStore = create<LessonStore>()(
               const newCompleted = state.completedLessonIds.includes(lessonId)
                 ? state.completedLessonIds
                 : [...state.completedLessonIds, lessonId];
-                
-              set({ 
-                isSuccess: true, 
+
+              set({
+                isSuccess: true,
                 isDecrypting: true,
                 completedLessonIds: newCompleted,
                 maxLessonIdx: Math.max(state.maxLessonIdx, state.currentLessonIdx + 1)
@@ -372,8 +470,8 @@ export const useLessonStore = create<LessonStore>()(
     }),
     {
       name: 'signal-shell-lesson',
-      partialize: (state) => ({ 
-        currentLessonIdx: state.currentLessonIdx, 
+      partialize: (state) => ({
+        currentLessonIdx: state.currentLessonIdx,
         maxLessonIdx: state.maxLessonIdx,
         completedLessonIds: state.completedLessonIds,
         currentTaskIdx: state.currentTaskIdx,

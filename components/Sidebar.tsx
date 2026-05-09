@@ -72,64 +72,68 @@ export const Sidebar = () => {
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
         {view === 'dashboard' ? (
-          <div className="space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
+          <div className="space-y-12 animate-in fade-in slide-in-from-left-6 duration-1000">
             <div>
-              <div className="flex items-center gap-2 mb-6">
-                <Info className={`w-5 h-5 ${THEME.accent}`} />
-                <h2 className="text-xl font-bold tracking-tight font-[family-name:var(--font-orbitron)] uppercase">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 bg-[#00FF9F]/10 rounded-sm">
+                  <Info className={`w-6 h-6 ${THEME.accent}`} />
+                </div>
+                <h2 className="text-2xl font-bold tracking-tight font-[family-name:var(--font-orbitron)] uppercase leading-none">
                   Nexus Intelligence
                 </h2>
               </div>
               
-              <div className="space-y-6 text-gray-400 font-[family-name:var(--font-rajdhani)] leading-relaxed text-base">
+              <div className="space-y-8 text-gray-400 font-[family-name:var(--font-rajdhani)] leading-relaxed text-lg">
                 <p>
-                  Operative, you are standing at the threshold of the <span className={THEME.accent}>Signal to Shell</span> matrix. This is not merely a terminal; it is a bridge between the physical and the neural.
+                  Operative, you are entering the <span className={THEME.accent}>Signal to Shell</span> nexus—a high-fidelity training environment designed to evolve your biological command-line reflexes into an autonomous AI orchestration engine.
                 </p>
                 <p>
-                  Your objective is clear: evolve from a standard biological processor to a <span className="text-white">Master of the Gemini Protocol</span>. Through five deployment phases, you will master the atomic manipulation of data, the flow of command streams, and the eventual orchestration of autonomous agentic swarms.
+                  This project is a modular journey from <span className="text-white">Zero to Master of the Gemini CLI</span>. You will progress through five critical blocks, each inspired by the shifting states of consciousness required for high-stakes agentic operations.
                 </p>
-                <div className={`p-4 border border-[#00FF9F]/20 bg-[#00FF9F]/5 rounded shadow-[inset_0_0_10px_rgba(0,255,159,0.05)]`}>
-                  <p className="text-xs italic text-[#00FF9F]/70">
-                    "The shell is the air that we breathe. Mastery is not an option; it is a requirement for survival in the post-signal era."
+                <div className={`p-6 border-l-2 border-[#00FF9F] bg-[#00FF9F]/5 rounded-r-sm shadow-[inset_0_0_20px_rgba(0,255,159,0.03)]`}>
+                  <p className="text-sm font-mono text-[#00FF9F]">
+                    "The shell is not a tool. It is the nervous system of the machine. Mastery is the only path to the Singularity."
                   </p>
                 </div>
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <HelpCircle className={`w-5 h-5 ${THEME.accent}`} />
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-[0.3em] font-mono">
-                  Navigation_Guide
+            <div className="pt-4">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 bg-[#00FF9F]/10 rounded-sm">
+                  <HelpCircle className={`w-6 h-6 ${THEME.accent}`} />
+                </div>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-[0.4em] font-mono leading-none">
+                  Nexus_Navigation
                 </h3>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {[
-                  { icon: <LayoutGrid className="w-4 h-4" />, title: "The Nexus Hub", desc: "Select a Deployment Phase from the grid to initialize your training." },
-                  { icon: <Zap className="w-5 h-5" />, title: "Live Progression", desc: "Your progress is tracked across the neural link. Previous nodes remain accessible." },
-                  { icon: <Command className="w-4 h-4" />, title: "Command Entry", desc: "Execute signals within the terminal to satisfy node requirements." }
+                  { icon: <LayoutGrid className="w-5 h-5" />, title: "The Deployment Grid", desc: "Select a Deployment Phase from the central hub to initialize a training node." },
+                  { icon: <Zap className="w-6 h-6" />, title: "Persistent Link", desc: "Your progress is burned into the neural link. You can return to any completed node to refresh your state." },
+                  { icon: <ArrowLeft className="w-5 h-5" />, title: "Exit & Resume", desc: "Use the breadcrumbs or the sidebar logo to switch between the active terminal and the nexus hub." }
                 ].map((item, idx) => (
-                  <div key={idx} className="flex gap-4 group">
-                    <div className={`mt-1 p-2 rounded bg-white/5 ${THEME.accent} border border-white/5 group-hover:border-[#00FF9F]/30 transition-colors`}>
+                  <div key={idx} className="flex gap-5 group">
+                    <div className={`mt-1 p-3 rounded-sm bg-white/5 ${THEME.accent} border border-white/5 group-hover:border-[#00FF9F]/40 transition-all duration-300 shadow-sm`}>
                       {item.icon}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white mb-1 font-mono uppercase tracking-wider">{item.title}</h4>
-                      <p className="text-xs text-gray-500 font-[family-name:var(--font-rajdhani)]">{item.desc}</p>
+                      <h4 className="text-base font-bold text-white mb-1 font-mono uppercase tracking-widest group-hover:text-[#00FF9F] transition-colors">{item.title}</h4>
+                      <p className="text-sm text-gray-500 font-[family-name:var(--font-rajdhani)] leading-tight">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="pt-6">
+            <div className="pt-10">
               <button 
                 onClick={() => setView('lesson')}
-                className={`w-full py-4 border border-[#00FF9F]/40 text-[#00FF9F] font-bold uppercase tracking-[0.2em] text-xs hover:bg-[#00FF9F]/10 transition-all flex items-center justify-center gap-2 font-mono group`}
+                className={`w-full py-5 border border-[#00FF9F]/60 text-[#00FF9F] font-bold uppercase tracking-[0.3em] text-xs hover:bg-[#00FF9F]/20 transition-all flex items-center justify-center gap-3 font-mono group shadow-[0_0_15px_rgba(0,255,159,0.1)]`}
               >
-                Return_to_Active_Terminal
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                ACCESS_ACTIVE_SESSION
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
               </button>
             </div>
           </div>
@@ -187,6 +191,17 @@ export const Sidebar = () => {
                   );
                 })}
               </div>
+
+              {currentLesson.tasks[currentTaskIdx]?.hint && !isSuccess && (
+                <div className="mt-4 p-3 bg-[#00D1FF]/5 border-l-2 border-[#00D1FF]/40 rounded-r animate-in fade-in slide-in-from-top-2 duration-700">
+                  <div className="flex items-center gap-2 mb-1 text-[10px] font-bold uppercase tracking-widest text-[#00D1FF]/70">
+                    <Info className="w-3 h-3" /> System Insight
+                  </div>
+                  <p className="text-[11px] text-[#00D1FF]/90 font-mono italic leading-relaxed">
+                    {currentLesson.tasks[currentTaskIdx].hint}
+                  </p>
+                </div>
+              )}
             </div>
 
             {isSuccess && (
@@ -206,27 +221,35 @@ export const Sidebar = () => {
                   
                   {decryptionComplete && (
                     <div className="space-y-3 animate-in slide-in-from-bottom-2 fade-in duration-500">
-                      <button
-                        onClick={() => {
-                          if (isLastLesson) {
-                            setView('dashboard');
-                          } else {
-                            nextLesson();
-                          }
-                        }}
-                        className={`w-full py-3 ${THEME.accentBg} text-black font-bold uppercase tracking-tighter text-xs hover:shadow-[0_0_20px_#00FF9F] transition-all font-[family-name:var(--font-rajdhani)] text-sm flex items-center justify-center gap-2`}
-                      >
-                        {isLastLesson ? 'Finish Block & Return to Nexus' : 'Proceed to Next Node'}
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                      
-                      {isLastLesson && (
+                      {isLastLesson ? (
                         <button
                           onClick={() => setView('dashboard')}
-                          className="w-full py-2 bg-white/5 border border-white/10 text-gray-400 font-bold uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all font-mono"
+                          className={`w-full py-3 ${THEME.accentBg} text-black font-bold uppercase tracking-tighter text-xs hover:shadow-[0_0_20px_#00FF9F] transition-all font-[family-name:var(--font-rajdhani)] text-sm flex items-center justify-center gap-2`}
                         >
-                          View Deployment Phases
+                          Finish Mission & Return to Nexus
+                          <ChevronRight className="w-4 h-4" />
                         </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={nextLesson}
+                            className={`w-full py-3 ${THEME.accentBg} text-black font-bold uppercase tracking-tighter text-xs hover:shadow-[0_0_20px_#00FF9F] transition-all font-[family-name:var(--font-rajdhani)] text-sm flex items-center justify-center gap-2`}
+                          >
+                            {LESSONS[currentLessonIdx].blockId !== LESSONS[currentLessonIdx + 1]?.blockId 
+                              ? 'Continue to Next Phase' 
+                              : 'Proceed to Next Node'}
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                          
+                          {LESSONS[currentLessonIdx].blockId !== LESSONS[currentLessonIdx + 1]?.blockId && (
+                            <button
+                              onClick={() => setView('dashboard')}
+                              className="w-full py-2 bg-white/5 border border-white/10 text-gray-400 font-bold uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all font-mono"
+                            >
+                              Return to Dashboard
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   )}

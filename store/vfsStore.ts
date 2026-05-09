@@ -26,21 +26,53 @@ export interface VFSStore {
   vfs: VFSState;
   currentPath: string;
   history: HistoryEntry[];
+  currentBlockId: string;
   setVfs: (vfs: VFSState) => void;
   setCurrentPath: (path: string) => void;
   addHistory: (entry: HistoryEntry) => void;
   clearHistory: () => void;
   executeCommand: (input: string) => void;
+  initializeForBlock: (blockId: string) => void;
+  getAutocomplete: (input: string) => string | null;
 }
 
-const INITIAL_VFS: VFSState = {
-  '/': { type: 'dir', children: ['README.md', 'cyber-nexus'] },
-  '/README.md': {
-    type: 'file',
-    content: '# Welcome to Signal to shell\nStart by exploring the system.',
+export const BLOCK_VFS: Record<string, VFSState> = {
+  'B1': {
+    '/': { type: 'dir', children: ['README.md', 'cyber-nexus'] },
+    '/README.md': {
+      type: 'file',
+      content: '# Welcome to Signal to shell\nStart by exploring the system.',
+    },
+    '/cyber-nexus': { type: 'dir', children: [] },
   },
-  '/cyber-nexus': { type: 'dir', children: [] },
+  'B2': {
+    '/': { type: 'dir', children: ['README.md', 'src', 'legacy', 'MIGRATION.md', 'system.log'] },
+    '/README.md': {
+      type: 'file',
+      content: '# Block 2: The Command Stream\nMaster the flow of signals and manipulate the project architecture.',
+    },
+    '/MIGRATION.md': {
+      type: 'file',
+      content: '# Migration Spec\n1. Move /legacy/user-model.py to /core/models/user.py\n2. Move /legacy/api-v1.py to /core/api/v1.py\n3. Ensure /legacy is empty.',
+    },
+    '/system.log': {
+      type: 'file',
+      content: '2026-05-09 10:00:01 INFO: System boot\n2026-05-09 10:00:05 ERROR_404: Node mismatch in sector 7\n2026-05-09 10:00:10 INFO: Retrying connection\n2026-05-09 10:00:15 ERROR_404: Authentication failure in sector 9\n2026-05-09 10:00:20 INFO: Signal lost\n2026-05-09 10:00:25 ERROR_404: Core breach detected',
+    },
+    '/src': { type: 'dir', children: ['app', 'utils'] },
+    '/src/app': { type: 'dir', children: ['main.py', 'routes'] },
+    '/src/app/main.py': { type: 'file', content: 'import sys\n\ndef main():\n    print("Hello Nexus")\n\nif __name__ == "__main__":\n    main()' },
+    '/src/app/routes': { type: 'dir', children: ['api.py'] },
+    '/src/app/routes/api.py': { type: 'file', content: 'from flask import Flask\n\napp = Flask(__name__)\n\n@app.route("/")\ndef index():\n    return "API v1"\n\n# Deepest file task target\n# Line 10\n# Line 11' },
+    '/src/utils': { type: 'dir', children: ['helper.py'] },
+    '/src/utils/helper.py': { type: 'file', content: 'def help():\n    pass' },
+    '/legacy': { type: 'dir', children: ['user-model.py', 'api-v1.py'] },
+    '/legacy/user-model.py': { type: 'file', content: 'class User: pass' },
+    '/legacy/api-v1.py': { type: 'file', content: 'def api(): pass' },
+  }
 };
+
+const INITIAL_VFS = BLOCK_VFS['B1'];
 
 const resolvePath = (current: string, target: string) => {
   if (!target) return current;
@@ -65,6 +97,7 @@ export const useVFSStore = create<VFSStore>()(
     (set, get) => ({
       vfs: INITIAL_VFS,
       currentPath: '/',
+      currentBlockId: 'B1',
       history: [
         { type: 'system', content: 'SIGNAL OS v1.0.4 - INITIALIZED' },
         { type: 'system', content: 'AUTHORIZED ACCESS DETECTED...' },
@@ -74,301 +107,354 @@ export const useVFSStore = create<VFSStore>()(
       setCurrentPath: (path) => set({ currentPath: path }),
       addHistory: (entry) => set((state) => ({ history: [...state.history, entry] })),
       clearHistory: () => set({ history: [] }),
-      executeCommand: (input: string) => {
-        const fullCmd = input.trim();
-        if (!fullCmd) return;
-
-        const [cmd, ...args] = fullCmd.split(/\s+/);
-        let output = '';
-        
+      initializeForBlock: (blockId: string) => {
         const state = get();
-        const currentPath = state.currentPath;
+        if (state.currentBlockId !== blockId) {
+          const initialVfs = BLOCK_VFS[blockId] || INITIAL_VFS;
+          set({
+            currentBlockId: blockId,
+            vfs: JSON.parse(JSON.stringify(initialVfs)),
+            currentPath: '/',
+            history: [
+              ...state.history,
+              { type: 'system', content: `TRANSITIONING TO PHASE: ${blockId}` },
+              { type: 'system', content: `VFS RE-INITIALIZED FOR ${blockId}.` }
+            ]
+          });
+        }
+      },
+      getAutocomplete: (input: string) => {
+        const { vfs, currentPath } = get();
+        const parts = input.split(/\s+/);
+        const lastPart = parts[parts.length - 1];
+        
+        if (input.endsWith(' ') || !lastPart) return null;
+
+        let searchDir = currentPath;
+        let prefix = lastPart;
+
+        if (lastPart.includes('/')) {
+          const pathParts = lastPart.split('/');
+          prefix = pathParts.pop() || '';
+          const dirPart = pathParts.join('/') || (lastPart.startsWith('/') ? '/' : '.');
+          searchDir = resolvePath(currentPath, dirPart);
+        }
+
+        const node = vfs[searchDir];
+        if (node && node.type === 'dir') {
+          const matches = node.children.filter(child => child.startsWith(prefix));
+          if (matches.length === 1) {
+            const match = matches[0];
+            const isDir = vfs[resolvePath(searchDir, match)]?.type === 'dir';
+            return match.slice(prefix.length) + (isDir ? '/' : '');
+          }
+        }
+        return null;
+      },
+      executeCommand: (input: string) => {
+        const rawInput = input.trim();
+        if (!rawInput) return;
+
+        const state = get();
         const vfs = state.vfs;
+        const currentPath = state.currentPath;
 
-        let newHistory = [...state.history, { type: 'input', content: `${currentPath} > ${fullCmd}` } as HistoryEntry];
+        let newHistory = [...state.history, { type: 'input', content: `${currentPath} > ${rawInput}` } as HistoryEntry];
 
-        switch (cmd) {
-          case 'pwd': {
-            output = currentPath;
-            break;
-          }
-          case 'ls': {
-            const targetPath = args[0] ? resolvePath(currentPath, args[0]) : currentPath;
-            const dir = vfs[targetPath];
-            if (dir && dir.type === 'dir') {
-              output = dir.children.length > 0 ? dir.children.join('  ') : '';
-            } else if (dir && dir.type === 'file') {
-              output = args[0];
-            } else {
-              output = `ls: cannot access '${targetPath}': No such file or directory`;
-            }
-            break;
-          }
-          case 'cd': {
-            if (!args[0] || args[0] === '~') {
-              set({ currentPath: '/' });
-            } else if (args[0] === '..') {
-              const parts = currentPath.split('/').filter(Boolean);
-              parts.pop();
-              set({ currentPath: '/' + parts.join('/') });
-            } else {
-              const target = resolvePath(currentPath, args[0]);
-              if (vfs[target] && vfs[target].type === 'dir') {
-                set({ currentPath: target });
-              } else {
-                output = `cd: no such directory: ${args[0]}`;
-              }
-            }
-            break;
-          }
-          case 'mkdir': {
-            if (!args[0]) {
-              output = 'mkdir: missing operand';
-            } else {
-              const fullPath = resolvePath(currentPath, args[0]);
-              if (vfs[fullPath]) {
-                output = `mkdir: cannot create directory '${args[0]}': File exists`;
-              } else {
-                const parts = fullPath.split('/').filter(Boolean);
-                const dirName = parts.pop()!;
-                const parentPath = '/' + parts.join('/');
+        if (rawInput === 'sts-reset') {
+          const initialVfs = BLOCK_VFS[state.currentBlockId] || INITIAL_VFS;
+          set({ 
+            vfs: JSON.parse(JSON.stringify(initialVfs)), 
+            currentPath: '/', 
+            history: [{ type: 'system', content: `SYSTEM RESET COMPLETE. VFS RESTORED TO ${state.currentBlockId} INITIAL STATE.` }] 
+          });
+          return;
+        }
 
-                const parent = vfs[parentPath];
-                if (parent && parent.type === 'dir') {
-                  const newVfs = { ...vfs };
-                  newVfs[fullPath] = { type: 'dir', children: [] };
-                  newVfs[parentPath] = {
-                    ...parent,
-                    children: [...parent.children, dirName],
-                  };
-                  set({ vfs: newVfs });
-                } else {
-                  output = `mkdir: cannot create directory '${args[0]}': No such file or directory`;
-                }
-              }
-            }
-            break;
-          }
-          case 'touch': {
-            if (!args[0]) {
-              output = 'touch: missing file operand';
-            } else {
-              const fullPath = resolvePath(currentPath, args[0]);
-              if (vfs[fullPath]) {
-                // update timestamp (not implemented)
-              } else {
-                const parts = fullPath.split('/').filter(Boolean);
-                const fileName = parts.pop()!;
-                const parentPath = '/' + parts.join('/');
+        // Handle redirection
+        let actualInput = rawInput;
+        let redirectTarget: string | null = null;
+        if (rawInput.includes('>')) {
+          const parts = rawInput.split('>');
+          actualInput = parts[0].trim();
+          redirectTarget = parts[1].trim();
+        }
 
-                const parent = vfs[parentPath];
-                if (parent && parent.type === 'dir') {
-                  const newVfs = { ...vfs };
-                  newVfs[fullPath] = { type: 'file', content: '' };
-                  newVfs[parentPath] = {
-                    ...parent,
-                    children: [...parent.children, fileName],
-                  };
-                  set({ vfs: newVfs });
-                } else {
-                  output = `touch: cannot touch '${args[0]}': No such file or directory`;
-                }
-              }
-            }
-            break;
-          }
-          case 'rm': {
-            // Simplified rm
-            if (!args[0]) {
-              output = 'rm: missing operand';
-            } else {
-              const fullPath = resolvePath(currentPath, args[0]);
-              if (!vfs[fullPath]) {
-                output = `rm: cannot remove '${args[0]}': No such file or directory`;
-              } else if (vfs[fullPath].type === 'dir' && args[1] !== '-r' && args[1] !== '-rf') {
-                 // In a real terminal rm -rf is needed, but we keep it simple or require it.
-                 output = `rm: cannot remove '${args[0]}': Is a directory`;
-              } else {
-                const newVfs = { ...vfs };
-                // Also remove children if it's a directory
-                Object.keys(newVfs).forEach(key => {
-                  if (key.startsWith(fullPath)) {
-                    delete newVfs[key];
+        // Handle pipes
+        const pipeCommands = actualInput.split('|').map(s => s.trim());
+        let pipeOutput = '';
+
+        for (let i = 0; i < pipeCommands.length; i++) {
+          const [cmd, ...args] = pipeCommands[i].split(/\s+/);
+          let currentOutput = '';
+
+          switch (cmd) {
+            case 'pwd':
+              currentOutput = currentPath;
+              break;
+            case 'ls': {
+              const recursive = args.includes('-R');
+              const target = args.filter(a => !a.startsWith('-'))[0] || '';
+              const targetPath = resolvePath(currentPath, target);
+              
+              if (recursive) {
+                const results: string[] = [];
+                const walk = (path: string) => {
+                  const node = vfs[path];
+                  if (node && node.type === 'dir') {
+                    results.push(`${path}:`);
+                    results.push(node.children.join('  '));
+                    results.push('');
+                    node.children.forEach(child => {
+                      const childPath = path === '/' ? `/${child}` : `${path}/${child}`;
+                      walk(childPath);
+                    });
                   }
-                });
-                delete newVfs[fullPath];
-                
-                // Remove from parent
+                };
+                walk(targetPath);
+                currentOutput = results.join('\n');
+              } else {
+                const node = vfs[targetPath];
+                if (node && node.type === 'dir') {
+                  currentOutput = node.children.join('  ');
+                } else if (node && node.type === 'file') {
+                  currentOutput = target;
+                } else {
+                  currentOutput = `ls: cannot access '${targetPath}': No such file or directory`;
+                }
+              }
+              break;
+            }
+            case 'cd': {
+              const target = args[0] || '/';
+              if (target === '~') {
+                set({ currentPath: '/' });
+              } else {
+                const resolved = resolvePath(currentPath, target);
+                if (vfs[resolved] && vfs[resolved].type === 'dir') {
+                  set({ currentPath: resolved });
+                } else {
+                  currentOutput = `cd: no such directory: ${target}`;
+                }
+              }
+              break;
+            }
+            case 'mkdir': {
+              const isRecursive = args.includes('-p');
+              const target = args.filter(a => !a.startsWith('-'))[0];
+              if (!target) {
+                currentOutput = 'mkdir: missing operand';
+              } else {
+                const fullPath = resolvePath(currentPath, target);
                 const parts = fullPath.split('/').filter(Boolean);
-                const targetName = parts.pop()!;
-                const parentPath = '/' + parts.join('/');
-                const parent = newVfs[parentPath];
-                if (parent && parent.type === 'dir') {
-                   newVfs[parentPath] = {
-                     ...parent,
-                     children: parent.children.filter(c => c !== targetName)
-                   };
+                let currentBuild = '';
+                const newVfs = { ...get().vfs };
+
+                for (let j = 0; j < parts.length; j++) {
+                  const part = parts[j];
+                  const parentPath = currentBuild || '/';
+                  currentBuild += '/' + part;
+
+                  if (!newVfs[currentBuild]) {
+                    if (isRecursive || j === parts.length - 1) {
+                      newVfs[currentBuild] = { type: 'dir', children: [] };
+                      const parent = newVfs[parentPath] as DirNode;
+                      if (!parent.children.includes(part)) {
+                        newVfs[parentPath] = { ...parent, children: [...parent.children, part] };
+                      }
+                    } else {
+                      currentOutput = `mkdir: cannot create directory '${target}': No such file or directory`;
+                      break;
+                    }
+                  } else if (newVfs[currentBuild].type === 'file' && j === parts.length - 1) {
+                    currentOutput = `mkdir: cannot create directory '${target}': File exists`;
+                    break;
+                  }
                 }
-                set({ vfs: newVfs });
+                if (!currentOutput) set({ vfs: newVfs });
               }
+              break;
             }
-            break;
-          }
-          case 'cat': {
-            if (!args[0]) {
-              output = 'cat: missing operand';
-            } else {
-              const fullPath = resolvePath(currentPath, args[0]);
-              if (!vfs[fullPath]) {
-                output = `cat: ${args[0]}: No such file or directory`;
-              } else if (vfs[fullPath].type === 'dir') {
-                output = `cat: ${args[0]}: Is a directory`;
+            case 'touch': {
+              const target = args[0];
+              if (!target) {
+                currentOutput = 'touch: missing file operand';
               } else {
-                output = vfs[fullPath].content;
-              }
-            }
-            break;
-          }
-          case 'clear': {
-            set({ history: [] });
-            return;
-          }
-          case 'cp': {
-            if (!args[0] || !args[1]) {
-              output = 'cp: missing file operand';
-            } else {
-              const srcPath = resolvePath(currentPath, args[0]);
-              const destPath = resolvePath(currentPath, args[1]);
-              
-              if (!vfs[srcPath]) {
-                output = `cp: cannot stat '${args[0]}': No such file or directory`;
-              } else if (vfs[srcPath].type === 'dir') {
-                output = `cp: -r not specified; omitting directory '${args[0]}'`;
-              } else {
-                let actualDestPath = destPath;
-                if (vfs[destPath] && vfs[destPath].type === 'dir') {
-                   const srcParts = srcPath.split('/').filter(Boolean);
-                   const srcName = srcParts.pop() || '';
-                   actualDestPath = resolvePath(destPath, srcName);
+                const fullPath = resolvePath(currentPath, target);
+                const newVfs = { ...get().vfs };
+                if (!newVfs[fullPath]) {
+                  const parts = fullPath.split('/').filter(Boolean);
+                  const fileName = parts.pop()!;
+                  const parentPath = '/' + parts.join('/');
+                  const parent = newVfs[parentPath];
+                  if (parent && parent.type === 'dir') {
+                    newVfs[fullPath] = { type: 'file', content: '' };
+                    newVfs[parentPath] = { ...parent, children: [...parent.children, fileName] };
+                    set({ vfs: newVfs });
+                  } else {
+                    currentOutput = `touch: cannot touch '${target}': No such file or directory`;
+                  }
                 }
-                
-                const destParts = actualDestPath.split('/').filter(Boolean);
-                const destName = destParts.pop()!;
-                const destParentPath = '/' + destParts.join('/');
-                const destParent = vfs[destParentPath];
-                
-                if (!destParent || destParent.type !== 'dir') {
-                   output = `cp: cannot create regular file '${args[1]}': No such file or directory`;
+              }
+              break;
+            }
+            case 'cat': {
+              const target = args[0];
+              const content = i === 0 ? (target ? (vfs[resolvePath(currentPath, target)] as FileNode)?.content : '') : pipeOutput;
+              if (target && !vfs[resolvePath(currentPath, target)]) {
+                currentOutput = `cat: ${target}: No such file or directory`;
+              } else {
+                currentOutput = content || '';
+              }
+              break;
+            }
+            case 'grep': {
+              const pattern = args.filter(a => !a.startsWith('-'))[0];
+              const target = args.filter(a => !a.startsWith('-'))[1];
+              const input = target ? (vfs[resolvePath(currentPath, target)] as FileNode)?.content : pipeOutput;
+              if (input) {
+                currentOutput = input.split('\n').filter(line => line.includes(pattern)).join('\n');
+              }
+              break;
+            }
+            case 'wc': {
+              const isLines = args.includes('-l');
+              const input = pipeOutput || (args[0] ? (vfs[resolvePath(currentPath, args[0])] as FileNode)?.content : '');
+              if (input !== undefined) {
+                if (isLines) {
+                  currentOutput = input.split('\n').length.toString();
                 } else {
-                   const newVfs = { ...vfs };
-                   newVfs[actualDestPath] = { ...vfs[srcPath] };
-                   if (!destParent.children.includes(destName)) {
-                     newVfs[destParentPath] = {
-                       ...destParent,
-                       children: [...destParent.children, destName]
-                     };
-                   }
-                   set({ vfs: newVfs });
+                  currentOutput = `${input.split('\n').length} ${input.split(/\s+/).filter(Boolean).length} ${input.length}`;
                 }
               }
+              break;
             }
-            break;
-          }
-          case 'mv': {
-            if (!args[0] || !args[1]) {
-              output = 'mv: missing file operand';
-            } else {
-              const srcPath = resolvePath(currentPath, args[0]);
-              const destPath = resolvePath(currentPath, args[1]);
-              
-              if (!vfs[srcPath]) {
-                output = `mv: cannot stat '${args[0]}': No such file or directory`;
-              } else {
-                let actualDestPath = destPath;
-                if (vfs[destPath] && vfs[destPath].type === 'dir') {
-                   const srcParts = srcPath.split('/').filter(Boolean);
-                   const srcName = srcParts.pop() || '';
-                   actualDestPath = resolvePath(destPath, srcName);
+            case 'sort': {
+              const input = pipeOutput || (args[0] ? (vfs[resolvePath(currentPath, args[0])] as FileNode)?.content : '');
+              if (input) {
+                currentOutput = input.split('\n').filter(Boolean).sort().join('\n');
+              }
+              break;
+            }
+            case 'find': {
+              const nameArg = args[args.indexOf('-name') + 1]?.replace(/['"]/g, '');
+              const results: string[] = [];
+              const walk = (path: string) => {
+                const node = vfs[path];
+                if (!nameArg || path.endsWith(nameArg)) {
+                  results.push(path);
                 }
-                
-                if (srcPath === actualDestPath) {
-                  output = `mv: '${args[0]}' and '${args[1]}' are the same file`;
-                  break;
+                if (node && node.type === 'dir') {
+                  node.children.forEach(child => walk(path === '/' ? `/${child}` : `${path}/${child}`));
                 }
-
-                const destParts = actualDestPath.split('/').filter(Boolean);
-                const destName = destParts.pop()!;
-                const destParentPath = '/' + destParts.join('/');
-                const destParent = vfs[destParentPath];
-                
-                if (!destParent || destParent.type !== 'dir') {
-                   output = `mv: cannot move '${args[0]}' to '${args[1]}': No such file or directory`;
-                } else {
-                   const newVfs = { ...vfs };
-                   
-                   // Move the node
-                   newVfs[actualDestPath] = { ...vfs[srcPath] };
-                   delete newVfs[srcPath];
-
-                   // Update children arrays
-                   if (!destParent.children.includes(destName)) {
-                     newVfs[destParentPath] = {
-                       ...destParent,
-                       children: [...destParent.children, destName]
-                     };
-                   }
-
-                   const srcParts = srcPath.split('/').filter(Boolean);
-                   const srcName = srcParts.pop()!;
-                   const srcParentPath = '/' + srcParts.join('/');
-                   const srcParent = newVfs[srcParentPath];
-                   if (srcParent && srcParent.type === 'dir') {
-                      newVfs[srcParentPath] = {
-                        ...srcParent,
-                        children: srcParent.children.filter(c => c !== srcName)
-                      };
-                   }
-
-                   // Move all nested nodes if it's a directory
-                   if (vfs[srcPath].type === 'dir') {
-                     Object.keys(newVfs).forEach(key => {
-                       if (key.startsWith(srcPath + '/')) {
-                         const newKey = actualDestPath + key.slice(srcPath.length);
-                         newVfs[newKey] = newVfs[key];
-                         delete newVfs[key];
-                       }
-                     });
-                   }
-
-                   set({ vfs: newVfs });
+              };
+              walk(resolvePath(currentPath, args.filter(a => !a.startsWith('-'))[0] || '.'));
+              currentOutput = results.join('\n');
+              break;
+            }
+            case 'rm': {
+              const recursive = args.includes('-r') || args.includes('-rf');
+              const target = args.filter(a => !a.startsWith('-'))[0];
+              if (target) {
+                const fullPath = resolvePath(currentPath, target);
+                if (vfs[fullPath]) {
+                  const newVfs = { ...get().vfs };
+                  Object.keys(newVfs).forEach(key => {
+                    if (key.startsWith(fullPath + '/')) delete newVfs[key];
+                  });
+                  delete newVfs[fullPath];
+                  const parts = fullPath.split('/').filter(Boolean);
+                  const name = parts.pop()!;
+                  const parentPath = '/' + parts.join('/');
+                  const parent = newVfs[parentPath] as DirNode;
+                  if (parent) newVfs[parentPath] = { ...parent, children: parent.children.filter(c => c !== name) };
+                  set({ vfs: newVfs });
                 }
               }
+              break;
             }
-            break;
+            case 'cp':
+            case 'mv': {
+              const src = args[0];
+              const dest = args[1];
+              if (src && dest) {
+                const srcPath = resolvePath(currentPath, src);
+                const destPath = resolvePath(currentPath, dest);
+                if (vfs[srcPath]) {
+                  const newVfs = { ...get().vfs };
+                  const node = { ...newVfs[srcPath] };
+                  let actualDest = destPath;
+                  if (newVfs[destPath]?.type === 'dir') {
+                    actualDest = resolvePath(destPath, srcPath.split('/').pop()!);
+                  }
+                  
+                  newVfs[actualDest] = node;
+                  if (cmd === 'mv') {
+                    delete newVfs[srcPath];
+                    const sParts = srcPath.split('/').filter(Boolean);
+                    const sName = sParts.pop()!;
+                    const sParent = '/' + sParts.join('/');
+                    const pNode = newVfs[sParent] as DirNode;
+                    if (pNode) newVfs[sParent] = { ...pNode, children: pNode.children.filter(c => c !== sName) };
+                  }
+
+                  const dParts = actualDest.split('/').filter(Boolean);
+                  const dName = dParts.pop()!;
+                  const dParent = '/' + dParts.join('/');
+                  const dpNode = newVfs[dParent] as DirNode;
+                  if (dpNode && !dpNode.children.includes(dName)) {
+                    newVfs[dParent] = { ...dpNode, children: [...dpNode.children, dName] };
+                  }
+                  set({ vfs: newVfs });
+                }
+              }
+              break;
+            }
+            case 'clear':
+              set({ history: [] });
+              return;
+            case 'help':
+              currentOutput = 'Available commands: pwd, ls, cd, mkdir, touch, rm, cp, mv, cat, grep, wc, sort, find, clear, help';
+              break;
+            default:
+              currentOutput = `command not found: ${cmd}`;
           }
-          case 'help': {
-            output = 'Available commands: pwd, ls, cd, mkdir, touch, rm, cp, mv, cat, clear, gemini, help';
-            break;
-          }
-          case 'gemini': {
-            output = 'GEMINI CLI v0.1: Thinking... (Simulation: Analysis complete. System optimal.)';
-            break;
-          }
-          default: {
-            output = `command not found: ${cmd}`;
-            break;
+          pipeOutput = currentOutput;
+        }
+
+        if (redirectTarget) {
+          const fullPath = resolvePath(currentPath, redirectTarget);
+          const newVfs = { ...get().vfs };
+          const parts = fullPath.split('/').filter(Boolean);
+          const fileName = parts.pop()!;
+          const parentPath = '/' + parts.join('/');
+          const parent = newVfs[parentPath];
+          if (parent && parent.type === 'dir') {
+            newVfs[fullPath] = { type: 'file', content: pipeOutput };
+            if (!parent.children.includes(fileName)) {
+              newVfs[parentPath] = { ...parent, children: [...parent.children, fileName] };
+            }
+            set({ vfs: newVfs });
+            pipeOutput = '';
+          } else {
+            pipeOutput = `bash: ${redirectTarget}: No such file or directory`;
           }
         }
 
-        if (output) {
-          newHistory.push({ type: 'output', content: output });
+        if (pipeOutput) {
+          newHistory.push({ type: 'output', content: pipeOutput });
         }
-
         set({ history: newHistory });
       },
     }),
     {
       name: 'signal-shell-vfs',
+      partialize: (state) => ({
+        vfs: state.vfs,
+        currentPath: state.currentPath,
+        history: state.history,
+        currentBlockId: state.currentBlockId
+      }),
     }
   )
 );

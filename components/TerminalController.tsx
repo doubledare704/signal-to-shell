@@ -18,10 +18,12 @@ const THEME = {
 };
 
 export const TerminalController = () => {
-  const { vfs, currentPath, history, executeCommand, addHistory } = useVFSStore();
+  const { vfs, currentPath, history, executeCommand, addHistory, getAutocomplete } = useVFSStore();
   const isDecrypting = useLessonStore((state) => state.isDecrypting);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const isPiping = input.includes('|');
+  const isRedirecting = input.includes('>');
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,26 +38,34 @@ export const TerminalController = () => {
     }
   }, [history]);
 
-  const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return;
-    
-    const cmd = input.trim();
-    if (!cmd) return;
-
-    setInput('');
-
-    // Simulated Gemini Command handling with delay
-    if (cmd.startsWith('gemini')) {
-      addHistory({ type: 'input', content: `${currentPath} > ${cmd}` });
-      setIsThinking(true);
-      setTimeout(() => {
-        setIsThinking(false);
-        addHistory({ type: 'output', content: 'GEMINI CLI v0.1: Analysis complete. Required task identified.' });
-      }, 1500);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const completion = getAutocomplete(input);
+      if (completion) {
+        setInput(prev => prev + completion);
+      }
       return;
     }
 
-    executeCommand(cmd);
+    if (e.key === 'Enter') {
+      const cmd = input.trim();
+      if (!cmd) return;
+
+      setInput('');
+
+      if (cmd.startsWith('gemini')) {
+        addHistory({ type: 'input', content: `${currentPath} > ${cmd}` });
+        setIsThinking(true);
+        setTimeout(() => {
+          setIsThinking(false);
+          addHistory({ type: 'output', content: 'GEMINI CLI v0.1: Analysis complete. Required task identified.' });
+        }, 1500);
+        return;
+      }
+
+      executeCommand(cmd);
+    }
   };
 
   return (
@@ -88,8 +98,10 @@ export const TerminalController = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Terminal Area */}
         <div 
-          className={`flex-1 flex flex-col p-6 overflow-hidden relative signal-shell-panel border-none rounded-none shadow-none transition-all duration-300 ${
-            isDecrypting ? 'border-2 border-[#00FF9F] shadow-[0_0_15px_#00FF9F] animate-pulse' : ''
+          className={`flex-1 flex flex-col p-6 overflow-hidden relative signal-shell-panel border-none rounded-none shadow-none transition-all duration-500 ${
+            isDecrypting ? 'border-2 border-[#00FF9F] shadow-[0_0_30px_rgba(0,255,159,0.4)] animate-pulse' : 
+            isPiping ? 'border-2 border-[#00D1FF]/40 shadow-[0_0_25px_rgba(0,209,255,0.2)]' :
+            isRedirecting ? 'border-2 border-[#FF00FF]/40 shadow-[0_0_25px_rgba(255,0,255,0.2)]' : ''
           }`}
           onClick={() => inputRef.current?.focus()}
         >
@@ -125,7 +137,7 @@ export const TerminalController = () => {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleCommand}
+                  onKeyDown={handleKeyDown}
                   className="flex-1 bg-transparent border-none outline-none text-white caret-[#00FF9F]"
                 />
               </div>
@@ -146,13 +158,16 @@ export const TerminalController = () => {
               const depth = path.split('/').filter(Boolean).length;
               const name = path.split('/').pop() || '/';
               return (
-                <div key={path} className="flex items-center gap-2 py-1 px-2 rounded hover:bg-white/5 cursor-default transition-colors group" style={{ marginLeft: `${depth * 12}px` }}>
+                <div key={path} className="flex items-center gap-2 py-1 px-2 rounded hover:bg-white/5 cursor-default transition-all group" style={{ marginLeft: `${depth * 12}px` }}>
                   {data.type === 'dir' ? (
-                    <FolderTree className="w-4 h-4 text-[#00D1FF] opacity-60 group-hover:opacity-100" />
+                    <div className="relative">
+                      <FolderTree className="w-4 h-4 text-[#00D1FF] opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 bg-[#00FF9F] opacity-0 group-hover:opacity-20 blur-[4px] rounded-full animate-pulse"></div>
+                    </div>
                   ) : (
-                    <FileText className="w-4 h-4 text-gray-500 group-hover:text-gray-300" />
+                    <FileText className="w-4 h-4 text-gray-500 group-hover:text-[#00FF9F] transition-colors" />
                   )}
-                  <span className={`text-xs ${data.type === 'dir' ? 'font-medium' : 'text-gray-400'}`}>
+                  <span className={`text-xs transition-colors ${data.type === 'dir' ? 'font-medium text-[#00D1FF] group-hover:text-[#00FF9F]' : 'text-gray-400 group-hover:text-white'}`}>
                     {name}
                   </span>
                 </div>

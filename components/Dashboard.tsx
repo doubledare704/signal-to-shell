@@ -25,9 +25,9 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className={`flex-1 flex flex-col h-full ${THEME.bg} text-white font-sans overflow-y-auto scrollbar-hide`}>
+    <div className={`flex-1 flex flex-col h-full ${THEME.bg} text-white font-sans overflow-y-auto scrollbar-hide w-full`}>
       {/* Hero Header */}
-      <div className="p-12 border-b border-[#1a1a1a] bg-gradient-to-br from-[#0a0a0a] to-[#050505] relative overflow-hidden flex-shrink-0">
+      <div className="py-24 px-12 border-b border-[#1a1a1a] bg-gradient-to-br from-[#0a0a0a] to-[#050505] relative overflow-hidden flex-shrink-0 min-h-[450px] flex flex-col justify-center">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#00FF9F] opacity-[0.03] blur-[120px] rounded-full -mr-48 -mt-48"></div>
         
         <div className="max-w-4xl">
@@ -37,11 +37,11 @@ export const Dashboard = () => {
             </span>
           </div>
           
-          <h1 className="text-5xl font-bold mb-6 tracking-tight font-[family-name:var(--font-orbitron)] leading-tight">
+          <h1 className="text-6xl font-black mb-8 tracking-tighter font-[family-name:var(--font-orbitron)] leading-tight text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
             ZERO TO <span className={THEME.accent}>GEMINI</span>
           </h1>
           
-          <p className="text-gray-400 text-lg leading-relaxed max-w-2xl font-[family-name:var(--font-rajdhani)]">
+          <p className="text-gray-300 text-xl leading-relaxed max-w-3xl font-[family-name:var(--font-rajdhani)] font-medium">
             Master the Gemini Command Line Interface. From basic shell initialization to complex Virtual File System (VFS) manipulation and neural-prompt engineering. This curriculum is designed for high-stakes digital operations.
           </p>
 
@@ -135,7 +135,9 @@ export const Dashboard = () => {
 
                 {/* Progress bar at bottom */}
                 {!isLocked && (
-                  <div className="absolute bottom-0 left-0 h-[2px] bg-[#00FF9F]/20 w-full">
+                  <div 
+                    className="absolute bottom-0 left-0 h-[2px] bg-[#00FF9F]/20 w-full"
+                  >
                     <div 
                       className={`h-full ${THEME.accentBg} shadow-[0_0_10px_#00FF9F]`}
                       style={{ width: `${progress}%` }}
