@@ -20,9 +20,10 @@ const THEME = {
 
 export const TerminalController = () => {
   const { vfs, currentPath, history, executeCommand, addHistory, getAutocomplete } = useVFSStore();
-  const { isDecrypting, currentBlockId, currentLessonIdx, currentLogicStepIdx, agentStatus } = useLessonStore();
+  const { isDecrypting, currentBlockId, currentLessonIdx, currentLogicStepIdx, agentStatus, authMode, setAuthMode, setApiKey } = useLessonStore();
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const [showIndicator, setShowIndicator] = useState(false);
   const isPiping = input.includes('|');
   const isRedirecting = input.includes('>');
   
@@ -36,6 +37,17 @@ export const TerminalController = () => {
   useJudgeEngine();
 
   // Auto-scroll terminal
+  useEffect(() => {
+    if (history.length > 0) {
+      const last = history[history.length - 1];
+      if (last.type === 'output' && (last.content.includes('gemini') || last.content.includes('|⌐■_■|'))) {
+        setShowIndicator(true);
+        const timer = setTimeout(() => setShowIndicator(false), 4000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [history]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -55,6 +67,14 @@ export const TerminalController = () => {
     if (e.key === 'Enter') {
       const cmd = input.trim();
       if (!cmd) return;
+
+      if (authMode) {
+        setApiKey(cmd);
+        setAuthMode(false);
+        setInput('');
+        addHistory({ type: 'system', content: '[OK] SIGNAL_VOLATILITY_CONFIRMED. STATE_SYNCHRONIZATION_ACTIVE.' });
+        return;
+      }
 
       setInput('');
 
@@ -104,11 +124,17 @@ export const TerminalController = () => {
         <div 
           className={`flex-1 flex flex-col p-6 overflow-hidden relative signal-shell-panel border-none rounded-none shadow-none transition-all duration-500 ${
             isDecrypting ? 'border-2 border-[#00FF9F] shadow-[0_0_30px_rgba(0,255,159,0.4)] animate-pulse' : 
+            authMode ? 'border-2 border-[#00D1FF] shadow-[0_0_50px_rgba(0,209,255,0.6)] animate-[pulse_1s_infinite]' :
             isPiping ? 'border-2 border-[#00D1FF]/40 shadow-[0_0_25px_rgba(0,209,255,0.2)]' :
             isRedirecting ? 'border-2 border-[#FF00FF]/40 shadow-[0_0_25px_rgba(255,0,255,0.2)]' : ''
           }`}
           onClick={() => inputRef.current?.focus()}
         >
+          {showIndicator && (
+            <div className="absolute top-6 right-6 font-mono text-[#00D1FF] animate-bounce z-20 bg-[#00D1FF]/10 px-3 py-1 border border-[#00D1FF]/30 backdrop-blur-sm">
+              |⌐■_■|
+            </div>
+          )}
           <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-1 mb-4 scrollbar-hide">
             {history.map((line, i) => (
               <div
@@ -132,13 +158,13 @@ export const TerminalController = () => {
             
             {!isThinking && (
               <div className="flex items-center gap-2">
-                <span className={THEME.accent}>
-                  {currentPath} {'>'}
+                <span className={authMode ? THEME.info : THEME.accent}>
+                  {authMode ? 'SIGNAL_KEY >' : `${currentPath} >`}
                 </span>
                 <input
                   ref={inputRef}
                   autoFocus
-                  type="text"
+                  type={authMode ? "password" : "text"}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -192,12 +218,24 @@ export const TerminalController = () => {
             <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
             Node: localhost
           </div>
+          {currentBlockId === 'B4' && (
+            <div className={`flex items-center gap-1.5 ${THEME.info} animate-pulse`}>
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00D1FF]"></div>
+              SIGNAL: ACTIVE (VOLATILE)
+            </div>
+          )}
           <div className="flex items-center gap-1.5">
             <Globe className="w-3 h-3" />
             Ping: 24ms
           </div>
         </div>
         <div className="flex gap-4">
+          {currentBlockId === 'B4' && (
+            <div className="flex items-center gap-4 border-r border-[#1a1a1a] pr-4 mr-2">
+              <span className="text-gray-500">IN: <span className={THEME.info}>1.2M</span></span>
+              <span className="text-gray-500">OUT: <span className={THEME.accent}>42K</span></span>
+            </div>
+          )}
           <span>UTF-8</span>
           <span className={THEME.accent}>Connection: Encrypted</span>
         </div>

@@ -505,6 +505,208 @@ export const LESSONS: Lesson[] = [
     feedback: {
       success: "✓ PATTERN_LOCKED. Block 3 finalized. Agent discipline enforced."
     }
+  },
+  // BLOCK 4: THE MOMENT (The Gemini CLI Protocol)
+  {
+    id: "L4-1-SUMMONING",
+    blockId: "B4",
+    title: "4.1: The Summoning",
+    description: "Learn the difference between interactive and non-interactive modes with 'gemini'.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Pipe the README.md into Gemini for a quick summary: 'cat README.md | gemini -p \"summarize this\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('SUMMARY') && history.some(h => h.content.includes('gemini -p'));
+        },
+        hint: "Automation starts with piping. Use 'cat README.md | gemini -p ...'"
+      }
+    ],
+    feedback: {
+      success: "✓ SIGNAL_INITIALIZED. Gemini CLI summarizes the nexus with 100% accuracy."
+    }
+  },
+  {
+    id: "L4-2-SENSORY",
+    blockId: "B4",
+    title: "4.2: Sensory Injection",
+    description: "Inject high-density context using the '@' symbol.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Explain the logic in the auth service: 'gemini \"Explain @src/auth.py\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('AUTH_LOGIC') && history.some(h => h.content.includes('@src/auth.py'));
+        },
+        hint: "The '@' symbol is your sensory bridge to the VFS."
+      }
+    ],
+    feedback: {
+      success: "✓ CONTEXT_INJECTED. Gemini has digested the auth logic."
+    }
+  },
+  {
+    id: "L4-3-THINKING",
+    blockId: "B4",
+    title: "4.3: The Thinking Loop",
+    description: "Discover available tools within the Gemini REPL.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Enter the Gemini REPL and run '/tools' to see the agent's capabilities.",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('grep') && !!lastOutput?.includes('file_write');
+        },
+        hint: "Inside the REPL, '/tools' reveals the hidden hand of the architect."
+      }
+    ],
+    feedback: {
+      success: "✓ CAPABILITIES_DISCOVERED. You now know what the ghost can do."
+    }
+  },
+  {
+    id: "L4-4-GHOST",
+    blockId: "B4",
+    title: "4.4: The Ghost in the Shell",
+    description: "Execute local shell commands without leaving the AI session.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Inside the Gemini REPL, run '! ls' to see the project state.",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('VFS_SNAPSHOT') && history.some(h => h.content.includes('! ls'));
+        },
+        hint: "The '!' prefix bridges the AI session back to the machine."
+      }
+    ],
+    feedback: {
+      success: "✓ BRIDGE_ESTABLISHED. You can now command the machine from within the mind."
+    }
+  },
+  {
+    id: "L4-5-PERSISTENCE",
+    blockId: "B4",
+    title: "4.5: Persistence of Mind",
+    description: "Manage session states using chat save and resume.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Save your current session: '/chat save debug_v1', then resume it: '/chat resume debug_v1'.",
+        validate: (vfs, history, currentPath) => {
+          const hasSave = history.some(h => h.content.includes('/chat save debug_v1'));
+          const hasResume = history.some(h => h.content.includes('/chat resume debug_v1'));
+          return hasSave && hasResume;
+        },
+        hint: "Memory is volatile unless tagged. Use '/chat save' and '/chat resume'."
+      }
+    ],
+    feedback: {
+      success: "✓ STATE_PERSISTED. The session is locked in time."
+    }
+  },
+  {
+    id: "L4-6-ARCHITECT",
+    blockId: "B4",
+    title: "4.6: The Architect's Will",
+    description: "Ground the model using a GEMINI.md configuration file.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Create a 'GEMINI.md' file with the rule: 'Always use Tailwind CSS.'",
+        validate: (vfs, history, currentPath) => {
+          const file = vfs['/GEMINI.md'] as FileNode;
+          return !!file?.content.includes('Tailwind CSS');
+        },
+        hint: "GEMINI.md is the law of the directory."
+      }
+    ],
+    feedback: {
+      success: "✓ GROUNDING_ESTABLISHED. The agent now follows your architectural intent."
+    }
+  },
+  {
+    id: "L4-7-GROUNDED",
+    blockId: "B4",
+    title: "4.7: Grounded Reality",
+    description: "Bridge the knowledge gap with real-time web search.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Ask Gemini about the latest 2026 changes: 'gemini \"What are the latest changes in Gemini 2.5?\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('SEARCH_RESULTS') && !!lastOutput?.includes('Gemini 2.5');
+        },
+        hint: "When internal data fails, the web search tool provides the signal."
+      }
+    ],
+    feedback: {
+      success: "✓ REALITY_SYNCED. The agent is now aware of the present moment."
+    }
+  },
+  {
+    id: "L4-8-PROTOCOL",
+    blockId: "B4",
+    title: "4.8: The Protocol Layer",
+    description: "Manage external integrations via MCP.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "List the connected MCP servers: '/mcp list'.",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('Postgres MCP') && !!lastOutput?.includes('Slack MCP');
+        },
+        hint: "MCP is the nervous system of the agentic web."
+      }
+    ],
+    feedback: {
+      success: "✓ PROTOCOL_MAPPED. External services are now within reach."
+    }
+  },
+  {
+    id: "L4-9-YOLO",
+    blockId: "B4",
+    title: "4.9: The Yolo Threshold",
+    description: "Master autonomous execution modes.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Run a refactor in YOLO mode: 'gemini --yolo \"Refactor src/auth.py\"'.",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('AUTONOMOUS_EXECUTION') && history.some(h => h.content.includes('--yolo'));
+        },
+        hint: "YOLO mode removes the human-in-the-loop. Use with caution."
+      }
+    ],
+    feedback: {
+      success: "✓ YOLO_MODE_ACTIVE. The agent is now operating with full autonomy."
+    }
+  },
+  {
+    id: "L4-10-SYNTHESIS",
+    blockId: "B4",
+    title: "4.10: The Synthesis",
+    description: "The Final Synthesis. Full project automation.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Execute a complex mission: Read @README.md, check ! git status, and refactor in --yolo mode.",
+        validate: (vfs, history, currentPath) => {
+          const h = history.map(x => x.content).join(' ');
+          return h.includes('@README.md') && h.includes('! git status') && h.includes('--yolo');
+        },
+        hint: "Combine all lessons into one final signal."
+      }
+    ],
+    feedback: {
+      success: "✓ ARCHITECT_CONFIRMED. You have mastered the Gemini CLI Protocol. The Nexus is yours."
+    }
   }
 ];
 
@@ -519,6 +721,8 @@ interface LessonStore {
   currentBlockId: string;
   agentStatus: AgentStatus;
   currentLogicStepIdx: number;
+  apiKey: string | null;
+  authMode: boolean;
   setCurrentLessonIdx: (idx: number) => void;
   setCurrentTaskIdx: (idx: number) => void;
   setIsSuccess: (success: boolean) => void;
@@ -527,6 +731,8 @@ interface LessonStore {
   setCurrentBlockId: (id: string) => void;
   setAgentStatus: (status: AgentStatus) => void;
   setCurrentLogicStepIdx: (idx: number) => void;
+  setApiKey: (key: string | null) => void;
+  setAuthMode: (authMode: boolean) => void;
   nextLesson: () => void;
   jumpToLesson: (idx: number) => void;
   validateCurrentTask: (vfs: VFSState, history: VFSStore['history'], currentPath: string) => boolean;
@@ -545,6 +751,8 @@ export const useLessonStore = create<LessonStore>()(
       currentBlockId: 'B1',
       agentStatus: 'THINKING',
       currentLogicStepIdx: 0,
+      apiKey: null,
+      authMode: false,
       setCurrentLessonIdx: (idx) => {
         const state = get();
         // Only allow selecting lessons that have been reached
@@ -585,6 +793,8 @@ export const useLessonStore = create<LessonStore>()(
       setCurrentBlockId: (id) => set({ currentBlockId: id }),
       setAgentStatus: (status) => set({ agentStatus: status }),
       setCurrentLogicStepIdx: (idx) => set({ currentLogicStepIdx: idx }),
+      setApiKey: (apiKey) => set({ apiKey }),
+      setAuthMode: (authMode) => set({ authMode }),
       nextLesson: () => {
         const state = get();
         if (state.currentLessonIdx < LESSONS.length - 1) {

@@ -77,6 +77,16 @@ export const BLOCK_VFS: Record<string, VFSState> = {
     '/legacy': { type: 'dir', children: ['user-model.py', 'api-v1.py'] },
     '/legacy/user-model.py': { type: 'file', content: 'class User: pass' },
     '/legacy/api-v1.py': { type: 'file', content: 'def api(): pass' },
+  },
+  'B4': {
+    '/': { type: 'dir', children: ['README.md', 'GEMINI.md', 'src', 'config'] },
+    '/README.md': { type: 'file', content: "# Signal to Shell\nProject for AI automation." },
+    '/GEMINI.md': { type: 'file', content: "" },
+    '/src': { type: 'dir', children: ['auth.py', 'main.py'] },
+    '/src/auth.py': { type: 'file', content: "def login():\n    return True" },
+    '/src/main.py': { type: 'file', content: "import auth\nprint(auth.login())" },
+    '/config': { type: 'dir', children: ['settings.json'] },
+    '/config/settings.json': { type: 'file', content: '{"theme": "dark"}' },
   }
 };
 
@@ -198,6 +208,45 @@ export const useVFSStore = create<VFSStore>()(
           }
         }
 
+        // Block 4 (The Moment - Gemini CLI) Interceptor
+        if (state.currentBlockId === 'B4') {
+
+          if (rawInput === '/tools') {
+              newHistory.push({ type: 'output', content: 'AVAILABLE TOOLS: [grep, file_write, google_search, execute_test_suite]' });
+              set({ history: newHistory });
+              return;
+          }
+
+          if (rawInput.startsWith('! ')) {
+              const cmd = rawInput.slice(2);
+              if (cmd === 'ls') {
+                  newHistory.push({ type: 'output', content: 'VFS_SNAPSHOT: [README.md, GEMINI.md, src/, config/]' });
+              } else if (cmd === 'git status') {
+                  newHistory.push({ type: 'output', content: 'On branch main. Changes not staged for commit.' });
+              }
+              set({ history: newHistory });
+              return;
+          }
+
+          if (rawInput.startsWith('/chat save')) {
+              newHistory.push({ type: 'output', content: 'SESSION_SAVED: State debug_v1 captured.' });
+              set({ history: newHistory });
+              return;
+          }
+
+          if (rawInput.startsWith('/chat resume')) {
+              newHistory.push({ type: 'output', content: 'SESSION_RESUMED: Restoring state from debug_v1...' });
+              set({ history: newHistory });
+              return;
+          }
+
+          if (rawInput === '/mcp list') {
+              newHistory.push({ type: 'output', content: 'MCP SERVERS:\n- Postgres MCP (connected)\n- Slack MCP (connected)' });
+              set({ history: newHistory });
+              return;
+          }
+        }
+        
         if (rawInput === 'sts-reset') {
           const initialVfs = BLOCK_VFS[state.currentBlockId] || INITIAL_VFS;
           set({
@@ -499,8 +548,27 @@ export const useVFSStore = create<VFSStore>()(
               set({ history: [] });
               return;
             case 'help':
-              currentOutput = 'Available commands: pwd, ls, cd, mkdir, touch, rm, cp, mv, cat, grep, wc, sort, find, echo, clear, help';
+              currentOutput = 'Available commands: pwd, ls, cd, mkdir, touch, rm, cp, mv, cat, grep, wc, sort, find, echo, clear, help, gemini';
               break;
+            case 'gemini': {
+              const isYolo = args.includes('--yolo');
+              const hasFile = args.some(a => a.startsWith('@'));
+              const hasP = args.includes('-p');
+              const prompt = args[args.indexOf('-p') + 1] || '';
+              
+              if (hasP && prompt.includes('summarize')) {
+                  currentOutput = 'SUMMARY: This project is a virtual terminal for AI mastery. It uses Zustand for state.';
+              } else if (hasFile && args.some(a => a.includes('auth.py'))) {
+                  currentOutput = 'AUTH_LOGIC: The file contains a simple login() function returning True.';
+              } else if (isYolo) {
+                  currentOutput = 'AUTONOMOUS_EXECUTION: Refactoring src/auth.py... Done. (No approval required)';
+              } else if (args.join(' ').includes('Gemini 2.5')) {
+                  currentOutput = 'SEARCH_RESULTS: Gemini 2.5 introduced native tool-calling and improved latency. |⌐■_■|';
+              } else {
+                  currentOutput = 'GEMINI REPL: Welcome. Type /tools to see capabilities.';
+              }
+              break;
+            }
             default:
               currentOutput = `command not found: ${cmd}`;
           }
