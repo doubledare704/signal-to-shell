@@ -77,7 +77,7 @@ export const LESSONS: Lesson[] = [
           const lastInput = history.filter(h => h.type === 'input').pop();
           return !!(lastInput && lastInput.content.endsWith('> pwd')) && !!(lastOutput && lastOutput.content === '/');
         },
-        hint: "Type 'pwd' and press Enter."
+        hint: "Use the command to verify your current nexus coordinates. Example: 'pwd'"
       }
     ],
     feedback: {
@@ -98,7 +98,7 @@ export const LESSONS: Lesson[] = [
           const lastInput = history.filter(h => h.type === 'input').pop();
           return !!lastInput && lastInput.content.endsWith('> ls');
         },
-        hint: "Type 'ls' and press Enter."
+        hint: "Scan the local environment for available nodes. Example: 'ls'"
       }
     ],
     feedback: {
@@ -118,7 +118,7 @@ export const LESSONS: Lesson[] = [
         validate: (vfs, history, currentPath) => {
           return currentPath === '/cyber-nexus';
         },
-        hint: "Type 'cd cyber-nexus'."
+        hint: "Change your focus to a sub-directory. Example: 'cd documents'"
       }
     ],
     feedback: {
@@ -138,7 +138,7 @@ export const LESSONS: Lesson[] = [
         validate: (vfs, history, currentPath) => {
           return vfs['/cyber-nexus/logs']?.type === 'dir';
         },
-        hint: "Make sure you are in 'cyber-nexus' and type 'mkdir logs'."
+        hint: "Initialize a new data storage node. Example: 'mkdir archive'"
       }
     ],
     feedback: {
@@ -158,7 +158,7 @@ export const LESSONS: Lesson[] = [
         validate: (vfs, history, currentPath) => {
           return currentPath === '/cyber-nexus/logs';
         },
-        hint: "Type 'cd logs'."
+        hint: "Enter the target storage node. Example: 'cd system'"
       },
       {
         id: "T2",
@@ -166,7 +166,7 @@ export const LESSONS: Lesson[] = [
         validate: (vfs, history, currentPath) => {
           return vfs['/cyber-nexus/logs/session.log']?.type === 'file';
         },
-        hint: "Type 'touch session.log'."
+        hint: "Initialize a fresh signal record. Example: 'touch output.txt'"
       }
     ],
     feedback: {
@@ -188,7 +188,7 @@ export const LESSONS: Lesson[] = [
           const lastInput = history.filter(h => h.type === 'input').pop();
           return vfs['/cyber-nexus/logs/session.log'] === undefined && !!lastInput && lastInput.content.includes('rm session.log');
         },
-        hint: "Type 'rm session.log'."
+        hint: "Terminate an unwanted data node. Example: 'rm cache.tmp'"
       }
     ],
     feedback: {
@@ -208,7 +208,7 @@ export const LESSONS: Lesson[] = [
         validate: (vfs, history, currentPath) => {
           return currentPath === '/';
         },
-        hint: "Type 'cd /' or 'cd ..' twice."
+        hint: "Retract your focus to the root nexus. Example: 'cd /'"
       },
       {
         id: "T2",
@@ -216,7 +216,7 @@ export const LESSONS: Lesson[] = [
         validate: (vfs, history, currentPath) => {
           return vfs['/README-backup.md']?.type === 'file';
         },
-        hint: "Type 'cp README.md README-backup.md'."
+        hint: "Duplicate a signal to a new location. Example: 'cp config.sys config.bak'"
       }
     ],
     feedback: {
@@ -236,7 +236,7 @@ export const LESSONS: Lesson[] = [
         validate: (vfs, history, currentPath) => {
           return vfs['/README-old.md']?.type === 'file' && vfs['/README-backup.md'] === undefined;
         },
-        hint: "Type 'mv README-backup.md README-old.md'."
+        hint: "Relocate or re-label a data stream. Example: 'mv data.raw data.processed'"
       }
     ],
     feedback: {

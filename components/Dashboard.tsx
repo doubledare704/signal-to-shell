@@ -27,7 +27,7 @@ export const Dashboard = () => {
   return (
     <div className={`flex-1 flex flex-col h-full ${THEME.bg} text-white font-sans overflow-y-auto scrollbar-hide`}>
       {/* Hero Header */}
-      <div className="p-12 border-b border-[#1a1a1a] bg-gradient-to-br from-[#0a0a0a] to-[#050505] relative overflow-hidden">
+      <div className="p-12 border-b border-[#1a1a1a] bg-gradient-to-br from-[#0a0a0a] to-[#050505] relative overflow-hidden flex-shrink-0">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#00FF9F] opacity-[0.03] blur-[120px] rounded-full -mr-48 -mt-48"></div>
         
         <div className="max-w-4xl">
@@ -67,7 +67,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Blocks Grid */}
-      <div className="p-12 max-w-6xl w-full mx-auto">
+      <div className="p-12 max-w-6xl w-full mx-auto flex-shrink-0">
         <h2 className="text-xs font-bold text-gray-500 uppercase tracking-[0.3em] mb-12">Deployment_Phases</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -149,7 +149,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Footer Info */}
-      <div className="p-12 border-t border-[#1a1a1a] flex justify-between items-center text-[10px] text-gray-600 font-bold tracking-[0.2em] uppercase font-mono">
+      <div className="p-12 border-t border-[#1a1a1a] flex justify-between items-center text-[10px] text-gray-600 font-bold tracking-[0.2em] uppercase font-mono flex-shrink-0">
         <div className="flex gap-8">
           <span>Server: NEXUS_PRIMARY</span>
           <span>Latency: MINIMAL</span>
