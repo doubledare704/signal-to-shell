@@ -87,6 +87,15 @@ export const BLOCK_VFS: Record<string, VFSState> = {
     '/src/main.py': { type: 'file', content: "import auth\nprint(auth.login())" },
     '/config': { type: 'dir', children: ['settings.json'] },
     '/config/settings.json': { type: 'file', content: '{"theme": "dark"}' },
+  },
+  'B5': {
+    '/': { type: 'dir', children: ['README.md', 'src', 'logs', 'mcp_config.json'] },
+    '/README.md': { type: 'file', content: "# Block 5: Tomorrow's Dust\nArchitect autonomous agentic systems." },
+    '/mcp_config.json': { type: 'file', content: '{"servers": []}' },
+    '/src': { type: 'dir', children: ['app.py'] },
+    '/src/app.py': { type: 'file', content: "print('App running...')" },
+    '/logs': { type: 'dir', children: ['error.log'] },
+    '/logs/error.log': { type: 'file', content: "2026-05-09 12:00:00 ERROR: DivisionByZero in app.py:42" }
   }
 };
 
@@ -246,6 +255,21 @@ export const useVFSStore = create<VFSStore>()(
               newHistory.push({ type: 'output', content: 'MCP SERVERS:\n- Postgres MCP (connected)\n- Slack MCP (connected)' });
               set({ history: newHistory });
               return;
+          }
+        }
+
+        // Block 5 (Tomorrow's Dust) Interceptor
+        if (state.currentBlockId === 'B5') {
+          if (rawInput.startsWith('/mcp connect sqlite://')) {
+            newHistory.push({ type: 'output', content: 'CONNECTED: MCP server sqlite://db.sqlite initialized. Table [users] found.' });
+            set({ history: newHistory });
+            return;
+          }
+
+          if (rawInput.includes('gemini --autonomous')) {
+            newHistory.push({ type: 'output', content: 'AUTONOMOUS_LOOP: Scanning logs... Error found. Fixing src/app.py... Verified.' });
+            set({ history: newHistory });
+            return;
           }
         }
         

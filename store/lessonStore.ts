@@ -707,9 +707,67 @@ export const LESSONS: Lesson[] = [
     feedback: {
       success: "✓ ARCHITECT_CONFIRMED. You have mastered the Gemini CLI Protocol. The Nexus is yours."
     }
-  }
-];
-
+    },
+    // BLOCK 5: TOMORROW'S DUST (Agentic Orchestration)
+    {
+    id: "L5-1-MCP",
+    blockId: "B5",
+    title: "5.1: The MCP Server",
+    description: "Connect your terminal to structured data sources using the Model Context Protocol.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Connect to the local SQLite database: '/mcp connect sqlite://db.sqlite'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('CONNECTED') && !!lastOutput?.includes('sqlite://db.sqlite');
+        },
+        hint: "Structured signals require dedicated connectors. Use /mcp connect."
+      }
+    ],
+    feedback: {
+      success: "✓ DATABASE_LINKED. You can now query the nexus state directly."
+    }
+    },
+    {
+    id: "L5-2-YOLO",
+    blockId: "B5",
+    title: "5.2: Autonomous Mode",
+    description: "Define boundaries for agents operating in fully autonomous loops.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Initialize a self-healing loop: 'gemini --autonomous \"Fix any errors in logs/error.log\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('AUTONOMOUS_LOOP') && history.some(h => h.content.includes('--autonomous'));
+        },
+        hint: "The final step is letting go. Enable the autonomous loop."
+      }
+    ],
+    feedback: {
+      success: "✓ LOOP_ACTIVE. The agent is now maintaining the nexus state without human intervention."
+    }
+    },
+    {
+    id: "L5-3-MASTERY",
+    blockId: "B5",
+    title: "5.3: Mastery of State",
+    description: "Final Challenge. Prove you are a State Architect.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Run 'sts-reset' to prove you can rebuild the nexus from scratch.",
+        validate: (vfs, history, currentPath) => {
+          return history.some(h => h.content.includes('SYSTEM RESET COMPLETE'));
+        },
+        hint: "Sometimes you must destroy to create. Reset the system."
+      }
+    ],    feedback: {
+      success: "✓ CONGRATULATIONS, ARCHITECT. You have completed the Signal to Shell curriculum. The machine is now your instrument."
+    }
+    }
+    ];
 interface LessonStore {
   currentLessonIdx: number;
   maxLessonIdx: number;
