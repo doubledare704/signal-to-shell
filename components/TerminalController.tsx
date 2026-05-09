@@ -78,15 +78,7 @@ export const TerminalController = () => {
 
       setInput('');
 
-      if (cmd.startsWith('gemini')) {
-        addHistory({ type: 'input', content: `${currentPath} > ${cmd}` });
-        setIsThinking(true);
-        setTimeout(() => {
-          setIsThinking(false);
-          addHistory({ type: 'output', content: 'GEMINI CLI v0.1: Analysis complete. Required task identified.' });
-        }, 1500);
-        return;
-      }
+
 
       executeCommand(cmd);
     }

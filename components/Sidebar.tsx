@@ -18,13 +18,13 @@ const THEME = {
 };
 
 export const Sidebar = () => {
-  const { 
-    currentLessonIdx, 
-    currentTaskIdx, 
-    isSuccess, 
-    view, 
-    setView, 
-    nextLesson, 
+  const {
+    currentLessonIdx,
+    currentTaskIdx,
+    isSuccess,
+    view,
+    setView,
+    nextLesson,
     jumpToLesson,
     completedLessonIds,
     maxLessonIdx
@@ -47,7 +47,7 @@ export const Sidebar = () => {
   return (
     <div className={`w-full md:w-1/3 flex flex-col border-r ${THEME.border} ${THEME.surface} font-sans`}>
       <div className={`p-6 border-b ${THEME.border} flex items-center justify-between`}>
-        <div 
+        <div
           className="flex items-center gap-2 cursor-pointer group"
           onClick={() => setView('dashboard')}
         >
@@ -58,7 +58,7 @@ export const Sidebar = () => {
         </div>
         <div className="flex items-center gap-4">
           {view === 'lesson' && (
-            <button 
+            <button
               onClick={() => setView('dashboard')}
               className="text-gray-600 hover:text-white transition-colors"
               title="Dashboard"
@@ -82,8 +82,8 @@ export const Sidebar = () => {
                   Nexus Intelligence
                 </h2>
               </div>
-              
-              <div className="space-y-8 text-gray-400 font-[family-name:var(--font-rajdhani)] leading-relaxed text-lg">
+
+              <div className="space-y-4 text-gray-400 font-[family-name:var(--font-rajdhani)] leading-relaxed text-lg">
                 <p>
                   Operative, you are entering the <span className={THEME.accent}>Signal to Shell</span> nexus—a high-fidelity training environment designed to evolve your biological command-line reflexes into an autonomous AI orchestration engine.
                 </p>
@@ -98,7 +98,7 @@ export const Sidebar = () => {
               </div>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-1">
               <div className="flex items-center gap-3 mb-8">
                 <div className="p-2 bg-[#00FF9F]/10 rounded-sm">
                   <HelpCircle className={`w-6 h-6 ${THEME.accent}`} />
@@ -107,15 +107,15 @@ export const Sidebar = () => {
                   Nexus_Navigation
                 </h3>
               </div>
-              
-              <div className="space-y-6">
+
+              <div className="space-y-4">
                 {[
                   { icon: <LayoutGrid className="w-5 h-5" />, title: "The Deployment Grid", desc: "Select a Deployment Phase from the central hub to initialize a training node." },
-                  { icon: <Zap className="w-6 h-6" />, title: "Persistent Link", desc: "Your progress is burned into the neural link. You can return to any completed node to refresh your state." },
+                  { icon: <Zap className="w-5 h-5" />, title: "Persistent Link", desc: "Your progress is burned into the neural link. You can return to any completed node to refresh your state." },
                   { icon: <ArrowLeft className="w-5 h-5" />, title: "Exit & Resume", desc: "Use the breadcrumbs or the sidebar logo to switch between the active terminal and the nexus hub." }
                 ].map((item, idx) => (
                   <div key={idx} className="flex gap-5 group">
-                    <div className={`mt-1 p-3 rounded-sm bg-white/5 ${THEME.accent} border border-white/5 group-hover:border-[#00FF9F]/40 transition-all duration-300 shadow-sm`}>
+                    <div className={`mt-1 p-2 rounded-sm bg-white/5 ${THEME.accent} border border-white/5 group-hover:border-[#00FF9F]/40 transition-all duration-300 shadow-sm`}>
                       {item.icon}
                     </div>
                     <div>
@@ -127,8 +127,8 @@ export const Sidebar = () => {
               </div>
             </div>
 
-            <div className="pt-10">
-              <button 
+            <div className="pt-1">
+              <button
                 onClick={() => setView('lesson')}
                 className={`w-full py-5 border border-[#00FF9F]/60 text-[#00FF9F] font-bold uppercase tracking-[0.3em] text-xs hover:bg-[#00FF9F]/20 transition-all flex items-center justify-center gap-3 font-mono group shadow-[0_0_15px_rgba(0,255,159,0.1)]`}
               >
@@ -168,26 +168,26 @@ export const Sidebar = () => {
                 {currentLesson.tasks.map((task, idx) => {
                   const isCompleted = idx < currentTaskIdx || isSuccess;
                   const isCurrent = idx === currentTaskIdx && !isSuccess;
-                  
+
                   return (
-                      <div key={task.id} className={`flex items-start gap-2 ${isCompleted ? THEME.muted : isCurrent ? 'text-white' : 'text-gray-600 opacity-50'}`}>
-                        <div className="mt-0.5">
-                            {isCompleted ? (
-                              <CheckCircle2 className={`w-4 h-4 ${THEME.accent}`} />
-                            ) : isCurrent ? (
-                              <div className={`w-4 h-4 rounded-full border border-[#00FF9F] flex items-center justify-center animate-pulse`}>
-                                  <div className="w-2 h-2 rounded-full bg-[#00FF9F]"></div>
-                              </div>
-                            ) : (
-                              <div className="w-4 h-4 rounded-full border border-gray-600"></div>
-                            )}
-                        </div>
-                        <div className="flex-1">
-                            <code className={`block text-xs font-mono ${isCompleted ? 'line-through opacity-70' : isCurrent ? THEME.accent : ''}`}>
-                              {task.instruction}
-                            </code>
-                        </div>
+                    <div key={task.id} className={`flex items-start gap-2 ${isCompleted ? THEME.muted : isCurrent ? 'text-white' : 'text-gray-600 opacity-50'}`}>
+                      <div className="mt-0.5">
+                        {isCompleted ? (
+                          <CheckCircle2 className={`w-4 h-4 ${THEME.accent}`} />
+                        ) : isCurrent ? (
+                          <div className={`w-4 h-4 rounded-full border border-[#00FF9F] flex items-center justify-center animate-pulse`}>
+                            <div className="w-2 h-2 rounded-full bg-[#00FF9F]"></div>
+                          </div>
+                        ) : (
+                          <div className="w-4 h-4 rounded-full border border-gray-600"></div>
+                        )}
                       </div>
+                      <div className="flex-1">
+                        <code className={`block text-xs font-mono ${isCompleted ? 'line-through opacity-70' : isCurrent ? THEME.accent : ''}`}>
+                          {task.instruction}
+                        </code>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
@@ -211,14 +211,14 @@ export const Sidebar = () => {
                     <CheckCircle2 className={`w-5 h-5 ${THEME.accent} shrink-0 mt-0.5`} />
                     <div>
                       <p className={`font-bold ${THEME.accent} font-[family-name:var(--font-rajdhani)] text-lg mb-2`}>
-                        <DecryptText 
-                          text={currentLesson.feedback.success} 
-                          onComplete={() => setDecryptionComplete(true)} 
+                        <DecryptText
+                          text={currentLesson.feedback.success}
+                          onComplete={() => setDecryptionComplete(true)}
                         />
                       </p>
                     </div>
                   </div>
-                  
+
                   {decryptionComplete && (
                     <div className="space-y-3 animate-in slide-in-from-bottom-2 fade-in duration-500">
                       {isLastLesson ? (
@@ -235,12 +235,12 @@ export const Sidebar = () => {
                             onClick={nextLesson}
                             className={`w-full py-3 ${THEME.accentBg} text-black font-bold uppercase tracking-tighter text-xs hover:shadow-[0_0_20px_#00FF9F] transition-all font-[family-name:var(--font-rajdhani)] text-sm flex items-center justify-center gap-2`}
                           >
-                            {LESSONS[currentLessonIdx].blockId !== LESSONS[currentLessonIdx + 1]?.blockId 
-                              ? 'Continue to Next Phase' 
+                            {LESSONS[currentLessonIdx].blockId !== LESSONS[currentLessonIdx + 1]?.blockId
+                              ? 'Continue to Next Phase'
                               : 'Proceed to Next Node'}
                             <ChevronRight className="w-4 h-4" />
                           </button>
-                          
+
                           {LESSONS[currentLessonIdx].blockId !== LESSONS[currentLessonIdx + 1]?.blockId && (
                             <button
                               onClick={() => setView('dashboard')}
@@ -263,7 +263,7 @@ export const Sidebar = () => {
                   Course Progress
                 </p>
                 {view === 'lesson' && (
-                  <button 
+                  <button
                     onClick={() => setView('dashboard')}
                     className={`text-[10px] font-bold ${THEME.accent} uppercase tracking-widest flex items-center gap-1 hover:opacity-80 transition-opacity`}
                   >
@@ -276,16 +276,15 @@ export const Sidebar = () => {
                 const block = BLOCKS.find(b => b.id === l.blockId);
                 const isLocked = globalIdx > maxLessonIdx;
                 const isActive = globalIdx === currentLessonIdx;
-                
+
                 return (
                   <div
                     key={l.id}
                     onClick={() => {
                       if (!isLocked) jumpToLesson(globalIdx);
                     }}
-                    className={`flex items-center gap-3 p-2 rounded transition-colors ${
-                      isLocked ? 'cursor-not-allowed opacity-30' : 'cursor-pointer hover:bg-white/10'
-                    } ${isActive ? 'bg-white/5 border border-[#00FF9F]/20' : ''}`}
+                    className={`flex items-center gap-3 p-2 rounded transition-colors ${isLocked ? 'cursor-not-allowed opacity-30' : 'cursor-pointer hover:bg-white/10'
+                      } ${isActive ? 'bg-white/5 border border-[#00FF9F]/20' : ''}`}
                   >
                     <span className={`text-[10px] font-mono ${globalIdx <= currentLessonIdx ? THEME.accent : 'text-gray-600'}`}>
                       {l.id.replace('L', '')}

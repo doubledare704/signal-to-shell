@@ -229,13 +229,15 @@ export const useVFSStore = create<VFSStore>()(
           }
 
           if (rawInput.startsWith('/chat save')) {
-              newHistory.push({ type: 'output', content: 'SESSION_SAVED: State debug_v1 captured.' });
+              const sessionId = rawInput.split(' ')[2] || 'default';
+              newHistory.push({ type: 'output', content: `SESSION_SAVED: State ${sessionId} captured.` });
               set({ history: newHistory });
               return;
           }
 
           if (rawInput.startsWith('/chat resume')) {
-              newHistory.push({ type: 'output', content: 'SESSION_RESUMED: Restoring state from debug_v1...' });
+              const sessionId = rawInput.split(' ')[2] || 'default';
+              newHistory.push({ type: 'output', content: `SESSION_RESUMED: Restoring state from ${sessionId}...` });
               set({ history: newHistory });
               return;
           }
@@ -551,18 +553,19 @@ export const useVFSStore = create<VFSStore>()(
               currentOutput = 'Available commands: pwd, ls, cd, mkdir, touch, rm, cp, mv, cat, grep, wc, sort, find, echo, clear, help, gemini';
               break;
             case 'gemini': {
-              const isYolo = args.includes('--yolo');
-              const hasFile = args.some(a => a.startsWith('@'));
+              const joinedArgs = args.join(' ');
+              const isYolo = joinedArgs.includes('--yolo');
+              const hasFile = joinedArgs.includes('@');
               const hasP = args.includes('-p');
-              const prompt = args[args.indexOf('-p') + 1] || '';
+              const prompt = hasP ? (args[args.indexOf('-p') + 1] || '') : joinedArgs;
               
               if (hasP && prompt.includes('summarize')) {
                   currentOutput = 'SUMMARY: This project is a virtual terminal for AI mastery. It uses Zustand for state.';
-              } else if (hasFile && args.some(a => a.includes('auth.py'))) {
+              } else if (hasFile && joinedArgs.includes('auth.py')) {
                   currentOutput = 'AUTH_LOGIC: The file contains a simple login() function returning True.';
               } else if (isYolo) {
                   currentOutput = 'AUTONOMOUS_EXECUTION: Refactoring src/auth.py... Done. (No approval required)';
-              } else if (args.join(' ').includes('Gemini 2.5')) {
+              } else if (joinedArgs.includes('Gemini 2.5')) {
                   currentOutput = 'SEARCH_RESULTS: Gemini 2.5 introduced native tool-calling and improved latency. |⌐■_■|';
               } else {
                   currentOutput = 'GEMINI REPL: Welcome. Type /tools to see capabilities.';
