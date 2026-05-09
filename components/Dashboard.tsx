@@ -14,7 +14,7 @@ const THEME = {
 };
 
 export const Dashboard = () => {
-  const { currentLessonIdx, completedLessonIds, setView, setCurrentLessonIdx } = useLessonStore();
+  const { currentLessonIdx, completedLessonIds, setView, setCurrentLessonIdx, maxLessonIdx } = useLessonStore();
 
   const getBlockProgress = (blockId: string) => {
     const blockLessonIds = LESSONS.filter(l => l.blockId === blockId).map(l => l.id);
@@ -73,7 +73,8 @@ export const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {BLOCKS.map((block, i) => {
             const progress = getBlockProgress(block.id);
-            const isLocked = i > 0; // Only Block 1 is unlocked for now
+            const firstLessonIdx = LESSONS.findIndex(l => l.blockId === block.id);
+            const isLocked = firstLessonIdx > maxLessonIdx && i > 0; // Block 1 is always available
             const isCompleted = progress === 100;
             const isActive = progress > 0 && progress < 100;
 

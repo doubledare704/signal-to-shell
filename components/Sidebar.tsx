@@ -26,7 +26,8 @@ export const Sidebar = () => {
     setView, 
     nextLesson, 
     jumpToLesson,
-    completedLessonIds
+    completedLessonIds,
+    maxLessonIdx
   } = useLessonStore();
 
   const isLastLesson = currentLessonIdx === LESSONS.length - 1;
@@ -249,28 +250,38 @@ export const Sidebar = () => {
               </div>
               {LESSONS.map((l, i) => {
                 const block = BLOCKS.find(b => b.id === l.blockId);
+                const isLocked = i > maxLessonIdx;
+                
                 return (
                   <div
                     key={l.id}
                     onClick={() => {
-                      jumpToLesson(i);
+                      if (!isLocked) jumpToLesson(i);
                     }}
-                    className={`flex items-center gap-3 p-2 rounded transition-colors cursor-pointer hover:bg-white/10 ${i === currentLessonIdx ? 'bg-white/5 border border-[#00FF9F]/20' : i < currentLessonIdx ? 'opacity-70' : 'opacity-40'}`}
+                    className={`flex items-center gap-3 p-2 rounded transition-colors ${
+                      isLocked ? 'cursor-not-allowed opacity-30' : 'cursor-pointer hover:bg-white/10'
+                    } ${i === currentLessonIdx ? 'bg-white/5 border border-[#00FF9F]/20' : ''}`}
                   >
                     <span className={`text-xs font-mono ${i <= currentLessonIdx ? THEME.accent : 'text-gray-600'}`}>
                       {l.id.toString().padStart(2, '0')}
                     </span>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-[family-name:var(--font-rajdhani)] font-medium">{l.title}</span>
+                    <div className="flex flex-col flex-1">
+                      <span className="text-sm font-[family-name:var(--font-rajdhani)] font-medium">
+                        {l.title.split(': ')[1] || l.title}
+                      </span>
                       {i === currentLessonIdx && (
                         <span className="text-[9px] text-[#00FF9F]/50 uppercase tracking-widest font-mono">
                           {block?.subtitle}
                         </span>
                       )}
                     </div>
-                    {completedLessonIds.includes(l.id) && (
-                      <CheckCircle2 className={`w-3 h-3 ml-auto ${THEME.accent}`} />
-                    )}
+                    <div className="flex items-center gap-2 ml-auto">
+                      {completedLessonIds.includes(l.id) ? (
+                        <CheckCircle2 className={`w-3 h-3 ${THEME.accent}`} />
+                      ) : isLocked ? (
+                        <HelpCircle className="w-3 h-3 text-gray-700" />
+                      ) : null}
+                    </div>
                   </div>
                 );
               })}

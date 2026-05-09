@@ -278,22 +278,16 @@ export const useLessonStore = create<LessonStore>()(
       currentBlockId: 'B1',
       setCurrentLessonIdx: (idx) => {
         const state = get();
-        // Mark all previous lessons as completed if we are jumping forward
-        const newCompleted = [...state.completedLessonIds];
-        for (let i = 0; i < idx; i++) {
-          const id = LESSONS[i].id;
-          if (!newCompleted.includes(id)) newCompleted.push(id);
+        // Only allow selecting lessons that have been reached
+        if (idx >= 0 && idx <= state.maxLessonIdx && idx < LESSONS.length) {
+          set({ 
+            currentLessonIdx: idx, 
+            currentTaskIdx: 0, 
+            isSuccess: false, 
+            view: 'lesson',
+            isDecrypting: false
+          });
         }
-        
-        set({ 
-          currentLessonIdx: idx, 
-          maxLessonIdx: Math.max(state.maxLessonIdx, idx),
-          completedLessonIds: newCompleted,
-          currentTaskIdx: 0, 
-          isSuccess: false, 
-          view: 'lesson',
-          isDecrypting: false
-        });
       },
       setCurrentTaskIdx: (idx) => set({ currentTaskIdx: idx }),
       setIsSuccess: (success) => {
@@ -330,25 +324,15 @@ export const useLessonStore = create<LessonStore>()(
         }
       },
       jumpToLesson: (idx) => {
-        if (idx >= 0 && idx < LESSONS.length) {
-          const state = get();
-          const newCompleted = [...state.completedLessonIds];
-          // If jumping forward, mark previous as completed
-          if (idx > state.currentLessonIdx) {
-            for (let i = 0; i < idx; i++) {
-              const id = LESSONS[i].id;
-              if (!newCompleted.includes(id)) newCompleted.push(id);
-            }
-          }
-          
+        const state = get();
+        // Only allow jumping back to completed lessons or the current furthest reached lesson
+        if (idx >= 0 && idx <= state.maxLessonIdx && idx < LESSONS.length) {
           set({
             currentLessonIdx: idx,
-            maxLessonIdx: Math.max(state.maxLessonIdx, idx),
-            completedLessonIds: newCompleted,
             currentTaskIdx: 0,
             isSuccess: false,
             isDecrypting: false,
-            view: 'lesson' // Switch to lesson view when a lesson is picked
+            view: 'lesson'
           });
         }
       },
@@ -376,7 +360,8 @@ export const useLessonStore = create<LessonStore>()(
               set({ 
                 isSuccess: true, 
                 isDecrypting: true,
-                completedLessonIds: newCompleted 
+                completedLessonIds: newCompleted,
+                maxLessonIdx: Math.max(state.maxLessonIdx, state.currentLessonIdx + 1)
               });
               return true;
             }
