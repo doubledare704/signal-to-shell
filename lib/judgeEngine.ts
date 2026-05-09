@@ -22,9 +22,10 @@ export const useJudgeEngine = () => {
   }, [currentTaskIdx]);
 
   useEffect(() => {
-    if (!isSuccess && currentLesson) {
-      const lessonPassed = validateCurrentTask(vfs, history, currentPath);
+    if (currentLesson) {
+      const lessonPassed = validateCurrentTask(vfs, history, currentPath) || (typeof window !== 'undefined' && (window as any).STS_SUCCESS_SIGNAL);
       if (lessonPassed) {
+        if (typeof window !== 'undefined') (window as any).STS_SUCCESS_SIGNAL = false;
         playDigitalUnlockSound();
       }
     }

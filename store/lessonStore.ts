@@ -707,67 +707,303 @@ export const LESSONS: Lesson[] = [
     feedback: {
       success: "✓ ARCHITECT_CONFIRMED. You have mastered the Gemini CLI Protocol. The Nexus is yours."
     }
-    },
-    // BLOCK 5: TOMORROW'S DUST (Agentic Orchestration)
-    {
-    id: "L5-1-MCP",
+  },
+  // BLOCK 5: TOMORROW'S DUST (Agentic Orchestration)
+  {
+    id: "L5-1-MCP-DISCOVERY",
     blockId: "B5",
-    title: "5.1: The MCP Server",
-    description: "Connect your terminal to structured data sources using the Model Context Protocol.",
+    title: "5.1: The Discovery Layer",
+    description: "The Nexus is stable, but it is blind to the outside world. To orchestrate true state, the Intelligence must bridge the gap. We will use the Model Context Protocol to attach a database to the Signal.",
     tasks: [
       {
         id: "T1",
-        instruction: "Connect to the local SQLite database: '/mcp connect sqlite://db.sqlite'",
+        instruction: "Connect the Gemini CLI to the local SQLite database. Use 'gemini mcp add sqlite' then query it.",
         validate: (vfs, history, currentPath) => {
-          const lastOutput = history.findLast(h => h.type === 'output')?.content;
-          return !!lastOutput?.includes('CONNECTED') && !!lastOutput?.includes('sqlite://db.sqlite');
+          const state = useLessonStore.getState();
+          return state.currentLogicStepIdx >= 2 && state.agentStatus === 'SUCCESS';
         },
-        hint: "Structured signals require dedicated connectors. Use /mcp connect."
+        hint: "Follow the ReAct loop. First list the MCP servers, then add the sqlite server, then query it."
+      }
+    ],
+    logicChain: [
+      {
+        step: 1,
+        ai_thought: "THOUGHT: I am isolated. I detect a 'database.sqlite' file, but I lack the native tools to query it. Architect, what external connections are currently configured in my registry?",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "gemini mcp list",
+        hint: "The agent needs an inventory of its MCP servers. Use 'gemini mcp list'.",
+        on_success: "OBSERVATION: Registry scanned. [0] MCP Servers found. I am confined to the file system."
+      },
+      {
+        step: 2,
+        ai_thought: "THOUGHT: To manipulate the data state, I need a bridge. Attach the official SQLite MCP server to my sensory array.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "gemini mcp add sqlite",
+        hint: "Command the CLI to install the SQLite bridge. Run 'gemini mcp add sqlite'.",
+        on_success: "OBSERVATION: MCP Server 'sqlite' synchronized. New tools unlocked: [read_query, list_tables]."
+      },
+      {
+        step: 3,
+        ai_thought: "THOUGHT: The bridge is established. My sensory array has expanded. Command me to utilize this new tool to map the internal state of the database.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "gemini \"List the tables in database.sqlite\"",
+        hint: "Now that Gemini has the tool, ask it a natural language question about the database.",
+        on_success: "OBSERVATION: |⌐■_■| Tool [list_tables] executed. Discovered tables: 'users', 'telemetry', 'system_logs'."
       }
     ],
     feedback: {
-      success: "✓ DATABASE_LINKED. You can now query the nexus state directly."
+      success: "✓ SENSORY_EXPANSION_COMPLETE. The Database is now part of the Intelligence Signal."
     }
-    },
-    {
-    id: "L5-2-YOLO",
+  },
+  {
+    id: "L5-2-ARCHITECT-HAND",
     blockId: "B5",
-    title: "5.2: Autonomous Mode",
-    description: "Define boundaries for agents operating in fully autonomous loops.",
+    title: "5.2: The Architect's Hand",
+    description: "Extend the machine. Understand the anatomy of an MCP server by configuring its settings.",
     tasks: [
       {
         id: "T1",
-        instruction: "Initialize a self-healing loop: 'gemini --autonomous \"Fix any errors in logs/error.log\"'",
+        instruction: "Register a custom 'system-monitor' tool in '.gemini/settings.json' and ask Gemini to audit the system load.",
         validate: (vfs, history, currentPath) => {
-          const lastOutput = history.findLast(h => h.type === 'output')?.content;
-          return !!lastOutput?.includes('AUTONOMOUS_LOOP') && history.some(h => h.content.includes('--autonomous'));
+          const file = vfs['/.gemini/settings.json'] as FileNode;
+          return !!file?.content.includes('system-monitor') && history.some(h => h.content.includes('system load'));
         },
-        hint: "The final step is letting go. Enable the autonomous loop."
+        hint: "Create the config directory and file, then use 'gemini' to query the new tool."
       }
     ],
     feedback: {
-      success: "✓ LOOP_ACTIVE. The agent is now maintaining the nexus state without human intervention."
+      success: "✓ CUSTOM_EXTENSIONS_LOCKED. The machine now observes its own physical existence."
     }
-    },
-    {
-    id: "L5-3-MASTERY",
+  },
+  {
+    id: "L5-3-PLANNING",
     blockId: "B5",
-    title: "5.3: Mastery of State",
-    description: "Final Challenge. Prove you are a State Architect.",
+    title: "5.3: The Planning Pattern",
+    description: "Move from guessing to planning. Task Gemini with a complex refactor that requires a roadmap before execution.",
     tasks: [
       {
         id: "T1",
-        instruction: "Run 'sts-reset' to prove you can rebuild the nexus from scratch.",
+        instruction: "Task Gemini with a complex mission. It must output a 'PLAN.md' first, wait for your approval, and then execute.",
         validate: (vfs, history, currentPath) => {
-          return history.some(h => h.content.includes('SYSTEM RESET COMPLETE'));
+          return !!vfs['/PLAN.md'] || history.some(h => h.content.includes('PLAN.md'));
         },
-        hint: "Sometimes you must destroy to create. Reset the system."
+        hint: "Instruct Gemini: 'Create a PLAN.md for refactoring app.py then wait for my signal.'"
       }
-    ],    feedback: {
-      success: "✓ CONGRATULATIONS, ARCHITECT. You have completed the Signal to Shell curriculum. The machine is now your instrument."
+    ],
+    feedback: {
+      success: "✓ PLANNING_PROTOCOL_ENFORCED. Guesswork has been purged from the nexus."
     }
+  },  {
+    id: "L5-4-HIVEMIND",
+    blockId: "B5",
+    title: "5.4: The Hive Mind",
+    description: "Acting as the Orchestrator, splitting the intelligence into two distinct sub-agents: the Scout and the Fixer.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Delegate the state recovery. Spawn a Scout to audit the logs, then a Fixer to apply the correction in --yolo mode.",
+        validate: (vfs, history, currentPath) => {
+          const state = useLessonStore.getState();
+          return state.currentLogicStepIdx >= 1 && state.agentStatus === 'SUCCESS';
+        },
+        hint: "Follow the logic chain. First spawn the scout, then engage the fixer."
+      }
+    ],
+    logicChain: [
+      {
+        step: 1,
+        ai_thought: "THOUGHT: I detect a crash in the app.py execution state. I need a Scout sub-agent to retrieve the stack trace from /logs/crash.log.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "gemini \"Spawn a sub-agent to audit /logs/crash.log and report the error\"",
+        hint: "Use the sub-agent syntax to delegate the research task.",
+        on_success: "OBSERVATION: |⌐■_■| [Sub-Agent: Scout] Audit complete. ZeroDivisionError detected at app.py:2. Signal relayed to Orchestrator."
+      },
+      {
+        step: 2,
+        ai_thought: "THOUGHT: The Scout has provided the data. Now, I need a Fixer sub-agent to apply the correction in --yolo mode to restore the state.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "gemini --yolo \"Sub-agent Fixer: Use the Scout's report to fix app.py\"",
+        hint: "Delegate the repair to a second sub-agent using the --yolo flag.",
+        on_success: "OBSERVATION: |⌐■_■| [Sub-Agent: Fixer] Code injection successful. app.py line 2 wrapped in try/except block. State: STABLE."
+      }
+    ],
+    feedback: {
+      success: "✓ HIVE_MIND_SYNCHRONIZED. Delegation is the ultimate form of state control."
     }
-    ];
+  },
+  {
+    id: "L5-5-COMPRESS",
+    blockId: "B5",
+    title: "5.5: Sensory Overload",
+    description: "Manage 'Context Rot'. Learn to use /compress to distill the state without losing the core signal.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "The history is overwhelming. Run '/compress' to reduce the token history into a 'Memory Summary'.",
+        validate: (vfs, history, currentPath) => {
+          return history.some(h => h.content.includes('/compress')) && history.some(h => h.content.includes('MEMORY_SUMMARY'));
+        },
+        hint: "When signals collide, compression is the only path. Run '/compress'."
+      }
+    ],
+    feedback: {
+      success: "✓ CONTEXT_DISTILLED. Memory density optimized for long-term orchestration."
+    }
+  },
+  {
+    id: "L5-6-SAFETY",
+    blockId: "B5",
+    title: "5.6: The Safety Brake",
+    description: "Constrain the mischief. Use guardrails to prevent dangerous actions during autonomous runs.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Configure a 'Sandbox Mode' in GEMINI.md that forbids the 'terminal' tool but allows 'file_write'.",
+        validate: (vfs, history, currentPath) => {
+          const file = vfs['/GEMINI.md'] as FileNode;
+          return !!file?.content.includes('excludeTools') && !!file?.content.includes('terminal');
+        },
+        hint: "Update GEMINI.md with an 'excludeTools: [\"terminal\"]' rule."
+      }
+    ],
+    feedback: {
+      success: "✓ GUARDRAILS_ACTIVE. The agent is now safe for autonomous operation."
+    }
+  },
+  {
+    id: "L5-7-OBSERVABILITY",
+    blockId: "B5",
+    title: "5.7: Observability",
+    description: "Audit the intelligence. Use /stats to analyze token consumption and thought efficiency.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Analyze the current signal metrics. Run '/stats' to see the token bloat and tool-call latency.",
+        validate: (vfs, history, currentPath) => {
+          return history.some(h => h.content.includes('/stats')) && history.some(h => h.content.includes('TOKEN_BLOAT'));
+        },
+        hint: "Observability is the architect's second sight. Run '/stats'."
+      }
+    ],
+    feedback: {
+      success: "✓ METRICS_CAPUTRED. Efficiency drift identified and neutralized."
+    }
+  },
+  {
+    id: "L5-8-SELFHEALING",
+    blockId: "B5",
+    title: "5.8: The Self-Healing State",
+    description: "Construct a pipeline that listens to the dust and heals the nexus automatically.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Construct the self-healing loop. Pipe the crash logs into 'gemini --yolo' and verify the fix with 'python server.py'.",
+        validate: (vfs, history, currentPath) => {
+          const state = useLessonStore.getState();
+          return state.currentLogicStepIdx >= 2 && state.agentStatus === 'SUCCESS';
+        },
+        hint: "Expose the error with tail, pipe it to gemini --yolo, then run the server."
+      }
+    ],
+    logicChain: [
+      {
+        step: 1,
+        ai_thought: "THOUGHT: The server state has panicked. I need the Architect to pipe the log stream into my logic core to verify the anomaly.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "tail -n 2 logs/system.log",
+        hint: "Use 'tail -n 2 logs/system.log' to expose the error.",
+        on_success: "OBSERVATION: Error confirmed. The dust shows a memory leak."
+      },
+      {
+        step: 2,
+        ai_thought: "THOUGHT: I understand the error. Pipe the tail output into my executable with the YOLO flag so I can patch server.py autonomously.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "tail -n 2 logs/system.log | gemini --yolo \"Fix the error in server.py based on this log\"",
+        hint: "Pipe the log into 'gemini --yolo' and instruct it to fix the server.",
+        on_success: "OBSERVATION: |⌐■_■| [YOLO MODE ACTIVE] Log ingested. Applying patch to server.py. State healed."
+      },
+      {
+        step: 3,
+        ai_thought: "THOUGHT: The patch has been applied. Run the server to verify the new stable state.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "python server.py",
+        hint: "Verify the fix. Execute 'python server.py'.",
+        on_success: "OBSERVATION: Server running... [STABLE]. The architecture is self-sustaining."
+      }
+    ],
+    feedback: {
+      success: "✓ AUTONOMOUS_LOOP_CLOSED. The State is now self-sustaining."
+    }
+  },
+  {
+    id: "L5-9-FLEET",
+    blockId: "B5",
+    title: "5.9: Fleet Management",
+    description: "Manage global vs local state using multiple GEMINI.md files at different directory depths.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Establish local rules. Create 'src/frontend/GEMINI.md' with React rules and 'src/backend/GEMINI.md' with Python rules.",
+        validate: (vfs, history, currentPath) => {
+          const f = vfs['/src/frontend/GEMINI.md'] as FileNode;
+          const b = vfs['/src/backend/GEMINI.md'] as FileNode;
+          return !!f?.content.includes('React') && !!b?.content.includes('Python');
+        },
+        hint: "Create the nested directories then touch the individual GEMINI.md files."
+      }
+    ],
+    feedback: {
+      success: "✓ FLEET_MANAGED. Personas now shift automatically based on directory depth."
+    }
+  },
+  {
+    id: "L5-10-LEGACY",
+    blockId: "B5",
+    title: "5.10: The Architect's Legacy",
+    description: "The Final Capstone. Full Autonomous Lifecycle orchestration.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Execute the final mission: Plan the SaaS, add the cloud-run MCP, and deploy in --yolo mode.",
+        validate: (vfs, history, currentPath) => {
+          const state = useLessonStore.getState();
+          return state.currentLogicStepIdx >= 2 && state.agentStatus === 'SUCCESS';
+        },
+        hint: "Follow the architect's ritual: Plan, Add Tool, Execute YOLO."
+      }
+    ],
+    logicChain: [
+      {
+        step: 1,
+        ai_thought: "THOUGHT: I am ready. Architect, verify the GEMINI.md directive and initialize the planning phase.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "gemini \"Plan the SaaS architecture using @GEMINI.md\"",
+        hint: "Start by having Gemini create the architectural blueprint using '@GEMINI.md'.",
+        on_success: "OBSERVATION: |⌐■_■| [PLANNING_ACTIVE] 1. Expand api.py. 2. Attach Database MCP. 3. Execute infra/deploy.sh."
+      },
+      {
+        step: 2,
+        ai_thought: "THOUGHT: The plan is locked. Connect to the external Cloud-Run MCP to prepare the deployment target.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "gemini mcp add cloud-run",
+        hint: "Expand your sensory array. Add the 'cloud-run' MCP server.",
+        on_success: "OBSERVATION: [MCP: cloud-run] Registered. Destination: nexus-production-v1. Status: READY."
+      },
+      {
+        step: 3,
+        ai_thought: "THOUGHT: I have the plan and the tools. I will now perform the final autonomous execution. Architect, release the safety.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "gemini --yolo \"Execute the build and deploy to @infra/deploy.sh via cloud-run MCP\"",
+        hint: "The autonomous deployment. Use '--yolo' to authorize the full sequence.",
+        on_success: "OBSERVATION: |⌐■_■| [YOLO_MODE] Patching api.py... Success. Running deploy.sh... Success. Verifying health-check... [STABLE]. MISSION COMPLETE."
+      }
+    ],
+    feedback: {
+      success: "✓ LEGACY_ESTABLISHED. THE NEXUS IS ALIVE. YOU ARE THE SIGNAL."
+    }
+  }
+];
+
 interface LessonStore {
   currentLessonIdx: number;
   maxLessonIdx: number;
@@ -785,15 +1021,18 @@ interface LessonStore {
   setCurrentTaskIdx: (idx: number) => void;
   setIsSuccess: (success: boolean) => void;
   setIsDecrypting: (isDecrypting: boolean) => void;
+  setShowAscension: (show: boolean) => void;
   setView: (view: 'dashboard' | 'lesson') => void;
   setCurrentBlockId: (id: string) => void;
   setAgentStatus: (status: AgentStatus) => void;
   setCurrentLogicStepIdx: (idx: number) => void;
   setApiKey: (key: string | null) => void;
   setAuthMode: (authMode: boolean) => void;
+  validateLogicStep: (blockId: string, lessonId: string, stepIdx: number, isFinal: boolean) => void;
   nextLesson: () => void;
   jumpToLesson: (idx: number) => void;
   validateCurrentTask: (vfs: VFSState, history: VFSStore['history'], currentPath: string) => boolean;
+  setIsSuccessRaw: (success: boolean) => void;
 }
 
 export const useLessonStore = create<LessonStore>()(
@@ -805,6 +1044,7 @@ export const useLessonStore = create<LessonStore>()(
       currentTaskIdx: 0,
       isSuccess: false,
       isDecrypting: false,
+      showAscension: false,
       view: 'dashboard',
       currentBlockId: 'B1',
       agentStatus: 'THINKING',
@@ -846,6 +1086,7 @@ export const useLessonStore = create<LessonStore>()(
         }
         set({ isSuccess: success, completedLessonIds: newCompleted });
       },
+      setIsSuccessRaw: (isSuccess) => set({ isSuccess }),
       setIsDecrypting: (isDecrypting) => set({ isDecrypting }),
       setView: (view) => set({ view }),
       setCurrentBlockId: (id) => set({ currentBlockId: id }),
@@ -853,6 +1094,33 @@ export const useLessonStore = create<LessonStore>()(
       setCurrentLogicStepIdx: (idx) => set({ currentLogicStepIdx: idx }),
       setApiKey: (apiKey) => set({ apiKey }),
       setAuthMode: (authMode) => set({ authMode }),
+      validateLogicStep: (blockId, lessonId, stepIdx, isFinal) => {
+        if (isFinal) {
+          // Final step complete! Set success IMMEDIATELY.
+          set((state) => {
+            const newCompleted = state.completedLessonIds.includes(lessonId)
+              ? state.completedLessonIds
+              : [...state.completedLessonIds, lessonId];
+            
+            return {
+              isSuccess: true,
+              isDecrypting: true,
+              completedLessonIds: newCompleted,
+              maxLessonIdx: Math.max(state.maxLessonIdx, state.currentLessonIdx + 1),
+              showAscension: lessonId === 'L5-10-LEGACY'
+            };
+          });
+        } else {
+          // Increment step
+          const isSpeedRun = typeof window !== 'undefined' && window.localStorage.getItem('STS_SPEED_RUN') === '1';
+          setTimeout(() => {
+            set({ 
+              currentLogicStepIdx: stepIdx + 1,
+              agentStatus: 'THINKING'
+            });
+          }, isSpeedRun ? 100 : 1500);
+        }
+      },
       nextLesson: () => {
         const state = get();
         if (state.currentLessonIdx < LESSONS.length - 1) {
@@ -903,8 +1171,17 @@ export const useLessonStore = create<LessonStore>()(
       },
       validateCurrentTask: (vfs, history, currentPath) => {
         const state = get();
+        if (state.isSuccess) return true;
+
         const currentLesson = LESSONS[state.currentLessonIdx];
         if (!currentLesson) return false;
+
+        // Special case for logicChain lessons: they are validated via validateLogicStep
+        if (currentLesson.logicChain) {
+          // If we are at the final step and logic step handler hasn't set success yet,
+          // but we want to check it here just in case.
+          return state.isSuccess; 
+        }
 
         const currentTask = currentLesson.tasks[state.currentTaskIdx];
         if (!currentTask) return false;
@@ -916,20 +1193,19 @@ export const useLessonStore = create<LessonStore>()(
             return false; // Not lesson complete, just task complete
           } else {
             // Lesson complete!
-            if (!state.isSuccess) {
-              const lessonId = currentLesson.id;
-              const newCompleted = state.completedLessonIds.includes(lessonId)
-                ? state.completedLessonIds
-                : [...state.completedLessonIds, lessonId];
+            const lessonId = currentLesson.id;
+            const newCompleted = state.completedLessonIds.includes(lessonId)
+              ? state.completedLessonIds
+              : [...state.completedLessonIds, lessonId];
 
-              set({
-                isSuccess: true,
-                isDecrypting: true,
-                completedLessonIds: newCompleted,
-                maxLessonIdx: Math.max(state.maxLessonIdx, state.currentLessonIdx + 1)
-              });
-              return true;
-            }
+            set({
+              isSuccess: true,
+              isDecrypting: true,
+              completedLessonIds: newCompleted,
+              maxLessonIdx: Math.max(state.maxLessonIdx, state.currentLessonIdx + 1),
+              showAscension: currentLesson.id === 'L5-10-LEGACY'
+            });
+            return true;
           }
         }
         return false;
@@ -942,8 +1218,11 @@ export const useLessonStore = create<LessonStore>()(
         maxLessonIdx: state.maxLessonIdx,
         completedLessonIds: state.completedLessonIds,
         currentTaskIdx: state.currentTaskIdx,
+        isSuccess: state.isSuccess,
         view: state.view,
-        currentBlockId: state.currentBlockId
+        currentBlockId: state.currentBlockId,
+        currentLogicStepIdx: state.currentLogicStepIdx,
+        agentStatus: state.agentStatus
       }),
     }
   )

@@ -39,6 +39,7 @@ export async function startBlock(page: Page, blockTitle: string) {
   await page.evaluate(() => {
     Object.keys(localStorage).forEach((k) => localStorage.removeItem(k));
     Object.keys(sessionStorage).forEach((k) => sessionStorage.removeItem(k));
+    localStorage.setItem('STS_SPEED_RUN', '1');
     
     // Pre-seed the store with unlocked state
     const lessonState = {
@@ -84,11 +85,15 @@ export async function startBlock(page: Page, blockTitle: string) {
  * They only appear after the DecryptText animation finishes.
  */
 export async function verifySuccess(page: Page) {
-  await expect(
-    page.locator('button').filter({
-      hasText: /Proceed to Next Node|Continue to Next Phase|Finish Mission/,
-    }).first()
-  ).toBeVisible({ timeout: 10000 });
+  // Logic chain lessons have a 1.5s delay between steps and success.
+  // We'll use a longer timeout and a polling expect for stability.
+  await expect(async () => {
+    await expect(
+      page.locator('button').filter({
+        hasText: /Proceed to Next Node|Continue to Next Phase|Finish Mission/,
+      }).first()
+    ).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 10000 });
 }
 
 /**

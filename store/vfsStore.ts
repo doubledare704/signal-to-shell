@@ -89,13 +89,20 @@ export const BLOCK_VFS: Record<string, VFSState> = {
     '/config/settings.json': { type: 'file', content: '{"theme": "dark"}' },
   },
   'B5': {
-    '/': { type: 'dir', children: ['README.md', 'src', 'logs', 'mcp_config.json'] },
+    '/': { type: 'dir', children: ['README.md', 'STS.md', 'database.sqlite', 'logs', 'server.py', 'GEMINI.md', 'src', 'infra'] },
     '/README.md': { type: 'file', content: "# Block 5: Tomorrow's Dust\nArchitect autonomous agentic systems." },
-    '/mcp_config.json': { type: 'file', content: '{"servers": []}' },
-    '/src': { type: 'dir', children: ['app.py'] },
-    '/src/app.py': { type: 'file', content: "print('App running...')" },
-    '/logs': { type: 'dir', children: ['error.log'] },
-    '/logs/error.log': { type: 'file', content: "2026-05-09 12:00:00 ERROR: DivisionByZero in app.py:42" }
+    '/STS.md': { type: 'file', content: "# Architect Rules\n1. Assume full autonomy when interacting with MCP servers.\n# Hive Rules\n1. Always spawn a sub-agent for research before modifying core files." },
+    '/database.sqlite': { type: 'file', content: '<BINARY_DATA_LOCKED>' },
+    '/logs': { type: 'dir', children: ['crash.log', 'system.log'] },
+    '/logs/crash.log': { type: 'file', content: 'ZeroDivisionError: division by zero in app.py line 2' },
+    '/logs/system.log': { type: 'file', content: '[10:01:23] Server started.\n[10:01:24] FATAL: MemoryLeak: Buffer overflow at line 4' },
+    '/server.py': { type: 'file', content: "import time\nprint('Server running...')\nraise Exception('MemoryLeak: Buffer overflow at line 4')" },
+    '/GEMINI.md': { type: 'file', content: "# SYSTEM_CORE\nRole: Autonomous SaaS Architect\nRules: Use --yolo for deployment. Monitor logs for drift." },
+    '/src': { type: 'dir', children: ['app.py', 'api.py'] },
+    '/src/app.py': { type: 'file', content: "def run():\n    return 1 / 0  # CRITICAL_FAILURE" },
+    '/src/api.py': { type: 'file', content: "def start(): pass" },
+    '/infra': { type: 'dir', children: ['deploy.sh'] },
+    '/infra/deploy.sh': { type: 'file', content: "echo 'Deploying to cloud...'" }
   }
 };
 
@@ -188,31 +195,66 @@ export const useVFSStore = create<VFSStore>()(
 
         let newHistory = [...state.history, { type: 'input', content: `${currentPath} > ${rawInput}` } as HistoryEntry];
 
-        // Block 3 (Mind Mischief) Interceptor for Lesson 3.1
-        if (state.currentBlockId === 'B3') {
-          // Use dynamic import or separate store access to avoid circular dependency if any
-          const { currentLessonIdx, currentLogicStepIdx, setAgentStatus, setCurrentLogicStepIdx } = (useLessonStore as any).getState();
-          const currentLesson = LESSONS[currentLessonIdx];
+        const lessonState = (useLessonStore as any).getState();
+        const currentLesson = LESSONS[lessonState.currentLessonIdx];
 
-          if (currentLesson?.id === 'L3-1-REACT') {
-            const currentStep = currentLesson.logicChain?.[currentLogicStepIdx];
-            if (currentStep) {
-              if (rawInput === currentStep.required_command) {
-                setAgentStatus('SUCCESS');
-                newHistory.push({ type: 'system', content: currentStep.on_success });
+        // If lesson already success, don't reset or process logic chain further
+        if (lessonState.isSuccess) {
+          // Standard command execution still happens (optional, but keep it for feedback)
+          // but we return early from logic chain processing.
+        } else if (currentLesson?.logicChain) {
+          const currentStep = currentLesson.logicChain[lessonState.currentLogicStepIdx];
+          if (currentStep) {
+            // Check if input matches required command (handling pipes for 5.8)
+            const isMatch = (lessonState.currentBlockId === 'B5' && currentLesson.id === 'L5-8-SELFHEALING' && lessonState.currentLogicStepIdx === 1)
+              ? (rawInput.includes('tail') && rawInput.includes('|') && rawInput.includes('gemini --yolo'))
+              : (rawInput === currentStep.required_command);
 
-                if (currentLesson.logicChain && currentLogicStepIdx < currentLesson.logicChain.length - 1) {
-                  setTimeout(() => {
-                    setCurrentLogicStepIdx(currentLogicStepIdx + 1);
-                    setAgentStatus('THINKING');
-                  }, 1500);
-                }
-              } else {
-                setAgentStatus('ERROR');
-                newHistory.push({ type: 'system', content: `SIGNAL_ERROR: THE AGENT CANNOT PROCESS THIS OBSERVATION. EXPECTED: ${currentStep.required_command}` });
-                set({ history: newHistory });
-                return;
+            if (isMatch) {
+              lessonState.setAgentStatus('SUCCESS');
+              newHistory.push({ type: 'system', content: currentStep.on_success });
+
+              // Special effects for B5
+              if (lessonState.currentBlockId === 'B5') {
+                 if (currentLesson.id === 'L5-1-MCP-DISCOVERY' && lessonState.currentLogicStepIdx === 1) {
+                    newHistory.push({ type: 'system', content: '↳ [MCP: sqlite] Registered bridge to database.sqlite' });
+                 }
+                 if (currentLesson.id === 'L5-4-HIVEMIND') {
+                    if (lessonState.currentLogicStepIdx === 0) {
+                      newHistory.push({ type: 'system', content: '↳ [SCOUT] Reading /logs/crash.log... Done.' });
+                      newHistory.push({ type: 'system', content: '↳ [SCOUT] REPORT: ZeroDivisionError in app.py line 2. Fix suggested.' });
+                    } else if (lessonState.currentLogicStepIdx === 1) {
+                      newHistory.push({ type: 'system', content: '↳ [FIXER] Rewriting src/app.py... State Updated.' });
+                    }
+                 }
+                 if (currentLesson.id === 'L5-8-SELFHEALING' && lessonState.currentLogicStepIdx === 1) {
+                    newHistory.push({ type: 'system', content: '[WARNING]: YOLO FLAG DETECTED. BYPASSING APPROVAL GATES.' });
+                    newHistory.push({ type: 'system', content: '↳ [run_shell_command] sed -i "s/raise Exception.*/# Patch applied/" server.py' });
+                 }
+                 if (currentLesson.id === 'L5-10-LEGACY' && lessonState.currentLogicStepIdx === 2) {
+                    newHistory.push({ type: 'system', content: '*************************************************' });
+                    newHistory.push({ type: 'system', content: '*        STATE ARCHITECT ACCREDITATION          *' });
+                    newHistory.push({ type: 'system', content: '*        -----------------------------          *' });
+                    newHistory.push({ type: 'system', content: '*   HASH: dXNlcl83MDQ6MjAyNi0wNS0wOVQxODoyMTo0Mlo6W1ZGU19NQU5JUFVMQVRJT04sUkVfQUNUX0xPR0lDLEdFTUlOSV9QUk9UT0NPTCxNQ1BfT1JDSEVTVFJBVElPTl06RVRFUk5BTF9TSUdOQUw=  *' });
+                    newHistory.push({ type: 'system', content: '*************************************************' });
+                 }
               }
+
+              // Use the new atomic logic step validator
+              lessonState.validateLogicStep(
+                lessonState.currentBlockId, 
+                currentLesson.id, 
+                lessonState.currentLogicStepIdx,
+                lessonState.currentLogicStepIdx === currentLesson.logicChain.length - 1
+              );
+              set({ history: newHistory });
+              return;
+            } else if (lessonState.currentBlockId === 'B3' || (lessonState.currentBlockId === 'B5' && currentLesson.logicChain)) {
+              // Only fail if it was a logic chain lesson and command was wrong
+              lessonState.setAgentStatus('ERROR');
+              newHistory.push({ type: 'system', content: `SIGNAL_ERROR: THE AGENT CANNOT PROCESS THIS OBSERVATION. EXPECTED: ${currentStep.required_command}` });
+              set({ history: newHistory });
+              return;
             }
           }
         }
@@ -258,19 +300,18 @@ export const useVFSStore = create<VFSStore>()(
           }
         }
 
-        // Block 5 (Tomorrow's Dust) Interceptor
+        // Block 5 (Tomorrow's Dust) Miscellaneous Interceptors
         if (state.currentBlockId === 'B5') {
-          if (rawInput.startsWith('/mcp connect sqlite://')) {
-            newHistory.push({ type: 'output', content: 'CONNECTED: MCP server sqlite://db.sqlite initialized. Table [users] found.' });
-            set({ history: newHistory });
-            return;
-          }
-
-          if (rawInput.includes('gemini --autonomous')) {
-            newHistory.push({ type: 'output', content: 'AUTONOMOUS_LOOP: Scanning logs... Error found. Fixing src/app.py... Verified.' });
-            set({ history: newHistory });
-            return;
-          }
+           if (rawInput === '/compress') {
+              newHistory.push({ type: 'output', content: 'COMPRESSION_COMPLETE: MEMORY_SUMMARY established. [800k -> 10k tokens]' });
+              set({ history: newHistory });
+              return;
+           }
+           if (rawInput === '/stats') {
+              newHistory.push({ type: 'output', content: 'SIGNAL_STATS: [TOKEN_BLOAT: 12%], [THOUGHT_LATENCY: 42ms], [TOOL_EFFICIENCY: 98%]' });
+              set({ history: newHistory });
+              return;
+           }
         }
         
         if (rawInput === 'sts-reset') {
@@ -593,6 +634,15 @@ export const useVFSStore = create<VFSStore>()(
                   currentOutput = 'SEARCH_RESULTS: Gemini 2.5 introduced native tool-calling and improved latency. |⌐■_■|';
               } else {
                   currentOutput = 'GEMINI REPL: Welcome. Type /tools to see capabilities.';
+              }
+              break;
+            }
+            case 'python': {
+              const target = args[0];
+              if (target === 'server.py') {
+                 currentOutput = 'Server running... [STABLE]';
+              } else {
+                 currentOutput = `python: cannot open file '${target}': [Errno 2] No such file or directory`;
               }
               break;
             }

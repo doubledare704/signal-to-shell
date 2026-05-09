@@ -5,9 +5,10 @@ interface DecryptTextProps {
   text: string;
   speed?: number;
   onComplete?: () => void;
+  className?: string;
 }
 
-const DecryptText: React.FC<DecryptTextProps> = ({ text, speed = 40, onComplete }) => {
+const DecryptText: React.FC<DecryptTextProps> = ({ text, speed = 40, onComplete, className }) => {
   const [displayText, setDisplayText] = useState('');
   const chars = '0123456789ABCDEF!@#$%^&*()_+';
   const setIsDecrypting = useLessonStore((state) => state.setIsDecrypting);
@@ -49,7 +50,9 @@ const DecryptText: React.FC<DecryptTextProps> = ({ text, speed = 40, onComplete 
     return () => clearInterval(interval);
   }, [text, speed, setIsDecrypting]);
 
-  return <span className="font-mono text-[#00FF9F] drop-shadow-[0_0_5px_#00FF9F]">{displayText}</span>;
+  const defaultStyles = "font-mono text-[#00FF9F] drop-shadow-[0_0_5px_#00FF9F]";
+  
+  return <span className={className || defaultStyles}>{displayText}</span>;
 };
 
 export default DecryptText;

@@ -16,11 +16,18 @@ const THEME = {
   error: 'text-[#FF00FF]',
   info: 'text-[#00D1FF]',
   muted: 'text-gray-500',
+  b5Accent: 'text-[#D4AF37]',
+  b5AccentBg: 'bg-[#D4AF37]',
 };
 
 export const TerminalController = () => {
   const { vfs, currentPath, history, executeCommand, addHistory, getAutocomplete } = useVFSStore();
   const { isDecrypting, currentBlockId, currentLessonIdx, currentLogicStepIdx, agentStatus, authMode, setAuthMode, setApiKey } = useLessonStore();
+  
+  const isB5 = currentBlockId === 'B5';
+  const activeAccent = isB5 ? THEME.b5Accent : THEME.accent;
+  const activeAccentBg = isB5 ? THEME.b5AccentBg : THEME.accentBg;
+
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [showIndicator, setShowIndicator] = useState(false);
@@ -229,7 +236,7 @@ export const TerminalController = () => {
             </div>
           )}
           <span>UTF-8</span>
-          <span className={THEME.accent}>Connection: Encrypted</span>
+          <span className={activeAccent}>Connection: Encrypted</span>
         </div>
       </div>
     </div>

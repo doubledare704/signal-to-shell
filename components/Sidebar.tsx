@@ -15,6 +15,8 @@ const THEME = {
   error: 'text-[#FF00FF]',
   info: 'text-[#00D1FF]',
   muted: 'text-gray-500',
+  b5Accent: 'text-[#D4AF37]',
+  b5AccentBg: 'bg-[#D4AF37]',
 };
 
 export const Sidebar = () => {
@@ -27,8 +29,13 @@ export const Sidebar = () => {
     nextLesson,
     jumpToLesson,
     completedLessonIds,
-    maxLessonIdx
+    maxLessonIdx,
+    currentBlockId
   } = useLessonStore();
+
+  const isB5 = currentBlockId === 'B5';
+  const activeAccent = isB5 ? THEME.b5Accent : THEME.accent;
+  const activeAccentBg = isB5 ? THEME.b5AccentBg : THEME.accentBg;
 
   const isLastLesson = currentLessonIdx === LESSONS.length - 1;
   const vfs = useVFSStore((state) => state.vfs);
@@ -51,10 +58,10 @@ export const Sidebar = () => {
           className="flex items-center gap-2 cursor-pointer group"
           onClick={() => setView('dashboard')}
         >
-          <div className={`w-3 h-3 rounded-full ${THEME.accentBg} animate-pulse shadow-[0_0_8px_#00FF9F]`}></div>
-          <h1 className="font-bold tracking-widest text-lg uppercase font-[family-name:var(--font-orbitron)] group-hover:text-[#00FF9F] transition-colors">
-            Signal to <span className={THEME.accent}>shell</span>
-          </h1>
+          <div className={`w-3 h-3 rounded-full ${activeAccentBg} animate-pulse shadow-[0_0_8px_${isB5 ? '#D4AF37' : '#00FF9F'}]`}></div>
+          <h1 className={`font-bold tracking-widest text-lg uppercase font-[family-name:var(--font-orbitron)] group-hover:${activeAccent} transition-colors`}>
+  Signal to <span className={activeAccent}>shell</span>
+</h1>
         </div>
         <div className="flex items-center gap-4">
           {view === 'lesson' && (
@@ -210,10 +217,11 @@ export const Sidebar = () => {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className={`w-5 h-5 ${THEME.accent} shrink-0 mt-0.5`} />
                     <div>
-                      <p className={`font-bold ${THEME.accent} font-[family-name:var(--font-rajdhani)] text-lg mb-2`}>
+                      <p className={`font-bold ${activeAccent} font-[family-name:var(--font-rajdhani)] text-lg mb-2`}>
                         <DecryptText
                           text={currentLesson.feedback.success}
                           onComplete={() => setDecryptionComplete(true)}
+                          className={`font-mono ${activeAccent} drop-shadow-[0_0_5px_${isB5 ? '#D4AF37' : '#00FF9F'}]`}
                         />
                       </p>
                     </div>
