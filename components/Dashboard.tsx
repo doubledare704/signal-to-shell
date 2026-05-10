@@ -34,9 +34,9 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className={`flex-1 flex flex-col h-full ${THEME.bg} text-white font-sans overflow-y-auto scrollbar-hide w-full`}>
+    <div className={`flex-1 flex flex-col h-full ${THEME.bg} text-white font-sans overflow-hidden w-full`}>
       {/* Hero Header */}
-      <div className="py-24 px-12 border-b border-[#1a1a1a] bg-gradient-to-br from-[#0a0a0a] to-[#050505] relative overflow-hidden flex-shrink-0 min-h-[450px] flex flex-col justify-center group">
+      <div className="py-14 px-12 border-b border-[#1a1a1a] bg-gradient-to-br from-[#0a0a0a] to-[#050505] relative overflow-hidden flex-shrink-0 min-h-[340px] flex flex-col justify-center group">
         <div className={`absolute top-0 right-0 w-96 h-96 ${isB5Complete ? 'bg-[#D4AF37]' : 'bg-[#00FF9F]'} opacity-[0.03] blur-[120px] rounded-full -mr-48 -mt-48`}></div>
         
         <div className="max-w-4xl">
@@ -46,7 +46,7 @@ export const Dashboard = () => {
             </span>
           </div>
           
-          <h1 className="text-6xl font-black mb-8 tracking-tighter font-[family-name:var(--font-orbitron)] leading-tight text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+          <h1 className="text-5xl font-black mb-6 tracking-tighter font-[family-name:var(--font-orbitron)] leading-tight text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
             ZERO TO <span className={isB5Complete ? 'text-[#D4AF37]' : THEME.accent}>{isB5Complete ? 'ARCHITECT' : 'GEMINI'}</span>
           </h1>
           
@@ -79,10 +79,17 @@ export const Dashboard = () => {
       </div>
 
       {/* Blocks Grid */}
-      <div className="p-12 max-w-6xl w-full mx-auto flex-shrink-0">
-        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-[0.3em] mb-12">Deployment_Phases</h2>
+      <div className="flex-1 min-h-0 p-8 pr-0 w-full flex flex-col">
+        <div className="flex items-center justify-between pr-8 mb-6">
+          <h2 className="text-xs font-bold text-gray-500 uppercase tracking-[0.3em]">Deployment_Phases</h2>
+          <div className="hidden md:flex items-center gap-3 text-[10px] text-gray-600 font-bold uppercase tracking-[0.25em]">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#00FF9F]/40 to-transparent"></div>
+            Phase_Rail
+          </div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="horizontal-phase-rail flex-1 min-h-0 overflow-x-auto overflow-y-hidden pb-6 pr-8">
+          <div className="flex h-full gap-6 min-w-max">
           {BLOCKS.map((block, i) => {
             const progress = getBlockProgress(block.id);
             const firstLessonIdx = LESSONS.findIndex(l => l.blockId === block.id);
@@ -105,7 +112,7 @@ export const Dashboard = () => {
                     }
                   }
                 }}
-                className={`group relative p-8 border ${isLocked ? 'border-[#1a1a1a] opacity-60' : `border-[#2a2a2a] hover:border-${isB5 ? '[#D4AF37]' : '[#00FF9F]'}/40`} ${THEME.surface} transition-all duration-300 cursor-pointer overflow-hidden`}
+                className={`group relative p-8 border w-[340px] md:w-[380px] h-full min-h-[300px] max-h-[380px] shrink-0 snap-start ${isLocked ? 'border-[#1a1a1a] opacity-60' : `border-[#2a2a2a] hover:border-${isB5 ? '[#D4AF37]' : '[#00FF9F]'}/40`} ${THEME.surface} transition-all duration-300 cursor-pointer overflow-hidden`}
               >
                 {/* Background Accent */}
                 {!isLocked && (
@@ -148,6 +155,7 @@ export const Dashboard = () => {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 
