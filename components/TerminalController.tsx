@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, FolderTree, FileText, Maximize2, Globe, Shield, KeyRound } from 'lucide-react';
+import { Terminal, FolderTree, FileText, Maximize2, Globe, Shield, KeyRound, Scale } from 'lucide-react';
 import { useVFSStore } from '../store/vfsStore';
 import { useLessonStore, LESSONS } from '../store/lessonStore';
 import { useJudgeEngine } from '../lib/judgeEngine';
@@ -22,6 +22,8 @@ const THEME = {
   b6AccentBg: 'bg-[#8A2BE2]',
   b7Accent: 'text-[#FF4500]',
   b7AccentBg: 'bg-[#FF4500]',
+  b8Accent: 'text-[#F5F5F5]',
+  b8AccentBg: 'bg-[#F5F5F5]',
 };
 
 export const TerminalController = () => {
@@ -31,8 +33,9 @@ export const TerminalController = () => {
   const isB5 = currentBlockId === 'B5';
   const isB6 = currentBlockId === 'B6';
   const isB7 = currentBlockId === 'B7';
-  const activeAccent = isB7 ? THEME.b7Accent : isB6 ? THEME.b6Accent : isB5 ? THEME.b5Accent : THEME.accent;
-  const activeAccentBg = isB7 ? THEME.b7AccentBg : isB6 ? THEME.b6AccentBg : isB5 ? THEME.b5AccentBg : THEME.accentBg;
+  const isB8 = currentBlockId === 'B8';
+  const activeAccent = isB8 ? THEME.b8Accent : isB7 ? THEME.b7Accent : isB6 ? THEME.b6Accent : isB5 ? THEME.b5Accent : THEME.accent;
+  const activeAccentBg = isB8 ? THEME.b8AccentBg : isB7 ? THEME.b7AccentBg : isB6 ? THEME.b6AccentBg : isB5 ? THEME.b5AccentBg : THEME.accentBg;
 
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
@@ -133,6 +136,12 @@ export const TerminalController = () => {
               </span>
             </div>
           )}
+          {isB8 && (
+            <div className="px-2 py-1 bg-white/10 border border-white/30 rounded text-[10px] flex items-center gap-2 text-[#F5F5F5]">
+              <Scale className="w-3 h-3" />
+              JUDGE_FEED: ARMED
+            </div>
+          )}
         </div>
       </div>
 
@@ -142,6 +151,7 @@ export const TerminalController = () => {
           className={`flex-1 flex flex-col p-6 overflow-hidden relative signal-shell-panel border-none rounded-none shadow-none transition-all duration-500 ${
             isDecrypting ? 'border-2 border-[#00FF9F] shadow-[0_0_30px_rgba(0,255,159,0.4)] animate-pulse' : 
             authMode ? 'border-2 border-[#00D1FF] shadow-[0_0_50px_rgba(0,209,255,0.6)] animate-[pulse_1s_infinite]' :
+            isB8 ? 'bg-[#121212] border-2 border-white/20 shadow-[0_0_24px_rgba(245,245,245,0.12)]' :
             isPiping ? 'border-2 border-[#00D1FF]/40 shadow-[0_0_25px_rgba(0,209,255,0.2)]' :
             isRedirecting ? 'border-2 border-[#FF00FF]/40 shadow-[0_0_25px_rgba(255,0,255,0.2)]' : ''
           }`}
@@ -277,6 +287,15 @@ export const TerminalController = () => {
                 HTTP: 200
               </span>
               <span>Ping: 42ms</span>
+            </div>
+          )}
+          {currentBlockId === 'B8' && (
+            <div className="flex items-center gap-3 text-[#F5F5F5]">
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#F5F5F5] animate-pulse"></div>
+                Judge: Active
+              </span>
+              <span>Quality Gate: 0.90</span>
             </div>
           )}
           <div className="flex items-center gap-1.5">

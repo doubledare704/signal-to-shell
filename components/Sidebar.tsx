@@ -19,6 +19,8 @@ const THEME = {
   b5AccentBg: 'bg-[#D4AF37]',
   b7Accent: 'text-[#FF4500]',
   b7AccentBg: 'bg-[#FF4500]',
+  b8Accent: 'text-[#F5F5F5]',
+  b8AccentBg: 'bg-[#F5F5F5]',
 };
 
 export const Sidebar = () => {
@@ -37,8 +39,9 @@ export const Sidebar = () => {
 
   const isB5 = currentBlockId === 'B5';
   const isB7 = currentBlockId === 'B7';
-  const activeAccent = isB7 ? THEME.b7Accent : isB5 ? THEME.b5Accent : THEME.accent;
-  const activeAccentBg = isB7 ? THEME.b7AccentBg : isB5 ? THEME.b5AccentBg : THEME.accentBg;
+  const isB8 = currentBlockId === 'B8';
+  const activeAccent = isB8 ? THEME.b8Accent : isB7 ? THEME.b7Accent : isB5 ? THEME.b5Accent : THEME.accent;
+  const activeAccentBg = isB8 ? THEME.b8AccentBg : isB7 ? THEME.b7AccentBg : isB5 ? THEME.b5AccentBg : THEME.accentBg;
 
   const isLastLesson = currentLessonIdx === LESSONS.length - 1;
   const vfs = useVFSStore((state) => state.vfs);
@@ -61,7 +64,7 @@ export const Sidebar = () => {
           className="flex items-center gap-2 cursor-pointer group"
           onClick={() => setView('dashboard')}
         >
-          <div className={`w-3 h-3 rounded-full ${activeAccentBg} animate-pulse shadow-[0_0_8px_${isB7 ? '#FF4500' : isB5 ? '#D4AF37' : '#00FF9F'}]`}></div>
+          <div className={`w-3 h-3 rounded-full ${activeAccentBg} animate-pulse shadow-[0_0_8px_${isB8 ? '#F5F5F5' : isB7 ? '#FF4500' : isB5 ? '#D4AF37' : '#00FF9F'}]`}></div>
           <h1 className={`font-bold tracking-widest text-lg uppercase font-[family-name:var(--font-orbitron)] group-hover:${activeAccent} transition-colors`}>
   Signal to <span className={activeAccent}>shell</span>
 </h1>
@@ -185,8 +188,8 @@ export const Sidebar = () => {
                         {isCompleted ? (
                           <CheckCircle2 className={`w-4 h-4 ${activeAccent}`} />
                         ) : isCurrent ? (
-                          <div className={`w-4 h-4 rounded-full border ${isB7 ? 'border-[#FF4500]' : 'border-[#00FF9F]'} flex items-center justify-center animate-pulse`}>
-                            <div className={`w-2 h-2 rounded-full ${isB7 ? 'bg-[#FF4500]' : 'bg-[#00FF9F]'}`}></div>
+                          <div className={`w-4 h-4 rounded-full border ${isB8 ? 'border-[#F5F5F5]' : isB7 ? 'border-[#FF4500]' : 'border-[#00FF9F]'} flex items-center justify-center animate-pulse`}>
+                            <div className={`w-2 h-2 rounded-full ${isB8 ? 'bg-[#F5F5F5]' : isB7 ? 'bg-[#FF4500]' : 'bg-[#00FF9F]'}`}></div>
                           </div>
                         ) : (
                           <div className="w-4 h-4 rounded-full border border-gray-600"></div>
@@ -224,7 +227,7 @@ export const Sidebar = () => {
                         <DecryptText
                           text={currentLesson.feedback.success}
                           onComplete={() => setDecryptionComplete(true)}
-                          className={`font-mono ${activeAccent} drop-shadow-[0_0_5px_${isB7 ? '#FF4500' : isB5 ? '#D4AF37' : '#00FF9F'}]`}
+                          className={`font-mono ${activeAccent} drop-shadow-[0_0_5px_${isB8 ? '#F5F5F5' : isB7 ? '#FF4500' : isB5 ? '#D4AF37' : '#00FF9F'}]`}
                         />
                       </p>
                     </div>
