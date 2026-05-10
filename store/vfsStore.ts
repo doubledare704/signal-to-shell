@@ -103,6 +103,18 @@ export const BLOCK_VFS: Record<string, VFSState> = {
     '/src/api.py': { type: 'file', content: "def start(): pass" },
     '/infra': { type: 'dir', children: ['deploy.sh'] },
     '/infra/deploy.sh': { type: 'file', content: "echo 'Deploying to cloud...'" }
+  },
+  'B6': {
+    '/': { type: 'dir', children: ['README.md', 'docs.txt', 'src', 'chunker.py', 'routing_policy.json', 'chunks'] },
+    '/README.md': { type: 'file', content: "# Block 6: The Less I Know The Better\nMove from terminal to the Vector Vault." },
+    '/docs.txt': { type: 'file', content: "How do I handle refunds?\nTo handle refunds, navigate to the dashboard and click 'Refund'.\nRefunds take 5-10 business days." },
+    '/src': { type: 'dir', children: ['app.py'] },
+    '/src/app.py': { type: 'file', content: "def main():\n    print('Signal Active')" },
+    '/chunker.py': { type: 'file', content: "chunk_size=500\nchunk_overlap=50" },
+    '/routing_policy.json': { type: 'file', content: '{"vault_threshold": 0.8, "prompt_threshold": 0.2}' },
+    '/chunks': { type: 'dir', children: ['chunk_1.txt', 'chunk_2.txt'] },
+    '/chunks/chunk_1.txt': { type: 'file', content: 'How do I handle refunds?' },
+    '/chunks/chunk_2.txt': { type: 'file', content: 'Refunds take 5-10 business days.' }
   }
 };
 
@@ -312,6 +324,43 @@ export const useVFSStore = create<VFSStore>()(
               set({ history: newHistory });
               return;
            }
+        }
+
+        // Block 6 (The Vector State) Interceptor
+        if (state.currentBlockId === 'B6') {
+          if (rawInput.startsWith('gemini embed')) {
+              newHistory.push({ type: 'output', content: 'VECTOR: [0.12, -0.45, 0.88, ...] (768-dim)' });
+              set({ history: newHistory });
+              return;
+          }
+
+          if (rawInput.includes('mcp call supabase')) {
+              if (rawInput.includes('CREATE EXTENSION vector')) {
+                  newHistory.push({ type: 'output', content: 'EXTENSION_ENABLED: pgvector v0.5.0 activated in vault.' });
+              } else if (rawInput.includes('<=> embed')) {
+                  newHistory.push({ type: 'output', content: 'MATCH_FOUND: [chunk_id: 104, score: 0.94]. Context: "How do I handle refunds?"' });
+              } else if (rawInput.includes('re_embed(app_py)')) {
+                  newHistory.push({ type: 'output', content: '[SYSTEM]: FILE_CHANGE_DETECTED -> RE-INDEXING_VECTOR_VAULT... [OK]' });
+              } else if (rawInput.includes('SELECT chunk_id, version')) {
+                  newHistory.push({ type: 'output', content: 'CONFLICT_DETECTED: [chunk_id: 202, version: 1], [chunk_id: 205, version: 2]. Source: api_docs.' });
+              } else if (rawInput.includes('DELETE FROM vectors')) {
+                  newHistory.push({ type: 'output', content: 'PRUNED: 12 outdated vector signals removed from vault.' });
+              } else if (rawInput.includes('SELECT COUNT(*)')) {
+                  newHistory.push({ type: 'output', content: 'CLEAN: Vault verified. 1 entry remaining for api_docs.' });
+              }
+              set({ history: newHistory });
+              return;
+          }
+
+          if (rawInput.includes('--session-id')) {
+              if (rawInput.includes('Save this session')) {
+                  newHistory.push({ type: 'output', content: 'SESSION_SAVED: Vector state anchored to ID "user_oleksii".' });
+              } else if (rawInput.includes('yesterday')) {
+                  newHistory.push({ type: 'output', content: 'SESSION_RETRIEVED: Found memory of "refunding a subscription". Signal restored.' });
+              }
+              set({ history: newHistory });
+              return;
+          }
         }
         
         if (rawInput === 'sts-reset') {

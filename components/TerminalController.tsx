@@ -18,6 +18,8 @@ const THEME = {
   muted: 'text-gray-500',
   b5Accent: 'text-[#D4AF37]',
   b5AccentBg: 'bg-[#D4AF37]',
+  b6Accent: 'text-[#8A2BE2]',
+  b6AccentBg: 'bg-[#8A2BE2]',
 };
 
 export const TerminalController = () => {
@@ -25,8 +27,9 @@ export const TerminalController = () => {
   const { isDecrypting, currentBlockId, currentLessonIdx, currentLogicStepIdx, agentStatus, authMode, setAuthMode, setApiKey } = useLessonStore();
   
   const isB5 = currentBlockId === 'B5';
-  const activeAccent = isB5 ? THEME.b5Accent : THEME.accent;
-  const activeAccentBg = isB5 ? THEME.b5AccentBg : THEME.accentBg;
+  const isB6 = currentBlockId === 'B6';
+  const activeAccent = isB6 ? THEME.b6Accent : isB5 ? THEME.b5Accent : THEME.accent;
+  const activeAccentBg = isB6 ? THEME.b6AccentBg : isB5 ? THEME.b5AccentBg : THEME.accentBg;
 
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
@@ -175,10 +178,39 @@ export const TerminalController = () => {
         </div>
 
         {/* Side Panel (VFS or LogicFeed) */}
-        {currentBlockId === 'B3' ? (
+        {currentLesson?.logicChain ? (
           <LogicFeed currentStep={currentLogicStep} status={agentStatus} />
         ) : (
           <div className={`w-64 border-l ${THEME.border} ${THEME.surface} p-4 hidden md:block overflow-y-auto scrollbar-hide`}>
+            {isB6 && (
+              <div className="mb-6 p-3 border border-[#8A2BE2]/30 bg-[#8A2BE2]/5 rounded-lg overflow-hidden relative group">
+                 <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-[#8A2BE2] uppercase tracking-tighter">Vector_Map.vfx</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#8A2BE2] animate-pulse"></div>
+                 </div>
+                 <div className="h-32 w-full relative">
+                    {/* Mock Vector Map dots */}
+                    {[...Array(12)].map((_, i) => (
+                      <div 
+                        key={i}
+                        className="absolute w-1 h-1 bg-[#8A2BE2] rounded-full animate-pulse"
+                        style={{
+                          left: `${20 + Math.random() * 60}%`,
+                          top: `${20 + Math.random() * 60}%`,
+                          opacity: 0.4 + Math.random() * 0.6,
+                          animationDelay: `${Math.random() * 2}s`
+                        }}
+                      />
+                    ))}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                       <div className="w-16 h-16 border border-[#8A2BE2]/20 rounded-full animate-[ping_3s_infinite]"></div>
+                    </div>
+                 </div>
+                 <div className="mt-2 text-[9px] text-[#8A2BE2]/60 font-bold uppercase text-center">
+                    Searching_Semantic_Space...
+                 </div>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-sans">
                 Workspace

@@ -70,6 +70,12 @@ export const BLOCKS: Block[] = [
     title: "Block 5: Tomorrow's Dust",
     subtitle: "Agentic Orchestration (Mastery)",
     description: "“There's no use in lying... it's the air that I breathe.” Architect autonomous systems."
+  },
+  {
+    id: "B6",
+    title: "Block 6: The Less I Know The Better",
+    subtitle: "The Vector State (Deep Memory)",
+    description: "\u201cSomeone said, it\u2019s not now or never / Wait 10 years, we\u2019ll be together.\u201d Move from terminal to the Vector Vault."
   }
 ];
 
@@ -1000,6 +1006,222 @@ export const LESSONS: Lesson[] = [
     ],
     feedback: {
       success: "✓ LEGACY_ESTABLISHED. THE NEXUS IS ALIVE. YOU ARE THE SIGNAL."
+    }
+  },
+
+  // BLOCK 6: THE LESS I KNOW THE BETTER (The Vector State)
+  {
+    id: "L6-1-EMBED",
+    blockId: "B6",
+    title: "6.1: Semantic Math (The Embedding Signal)",
+    description: "State can be represented as a vector in multi-dimensional space. 'Cat' and 'Kitten' are mathematically close. 'Cat' and 'Car' are not. Generate your first embedding using the Gemini model.",
+    example: "gemini embed \"def finalize_order():\"",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Generate an embedding: 'gemini embed \"def finalize_order():\"]'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('VECTOR') && !!lastOutput?.includes('768-dim') && history.some(h => h.content.includes('gemini embed'));
+        },
+        hint: "Use 'gemini embed' to transform text into a 768-dimension floating-point vector."
+      }
+    ],
+    feedback: {
+      success: "\u2713 EMBEDDING_GENERATED. The text has been quantized into 768-dimensional semantic space."
+    }
+  },
+  {
+    id: "L6-2-PGVECTOR",
+    blockId: "B6",
+    title: "6.2: The Vector Vault (pgvector Setup)",
+    description: "Configure the long-term memory store. SQL stores rows. Vector stores store meaning. Enable the pgvector extension in Supabase to unlock semantic retrieval.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Enable pgvector via MCP: 'gemini mcp call supabase \"CREATE EXTENSION vector;\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('EXTENSION_ENABLED') && history.some(h => h.content.includes('CREATE EXTENSION vector'));
+        },
+        hint: "Use the Supabase MCP to run the migration that enables the pgvector extension."
+      }
+    ],
+    feedback: {
+      success: "\u2713 VECTOR_VAULT_OPEN. pgvector extension enabled. The semantic index is ready for writes."
+    }
+  },
+  {
+    id: "L6-3-CHUNK",
+    blockId: "B6",
+    title: "6.3: Fragmenting the State (Chunking)",
+    description: "Large files destroy retrieval accuracy. Fragment the signal into 500-token chunks with 10% overlap for surgical precision.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Write the Python chunker: 'echo \"chunk_size=500\\nchunk_overlap=50\" > chunker.py'",
+        validate: (vfs, history, currentPath) => {
+          const file = vfs['/chunker.py'] as import('./vfsStore').FileNode;
+          return !!file?.content.includes('chunk_size') && !!file?.content.includes('chunk_overlap');
+        },
+        hint: "Create 'chunker.py' with 'chunk_size' and 'chunk_overlap' variables using echo redirect."
+      },
+      {
+        id: "T2",
+        instruction: "Run the chunker to populate '/chunks': 'python chunker.py'",
+        validate: (vfs, history, currentPath) => {
+          return vfs['/chunks']?.type === 'dir' && history.some(h => h.content.includes('python chunker.py'));
+        },
+        hint: "Execute 'python chunker.py' to fragment docs.txt into the /chunks directory."
+      }
+    ],
+    feedback: {
+      success: "\u2713 STATE_FRAGMENTED. /chunks directory populated. Retrieval accuracy maximized."
+    }
+  },
+  {
+    id: "L6-4-COSINE",
+    blockId: "B6",
+    title: "6.4: The Retrieval Protocol (Cosine Similarity)",
+    description: "Find the needle in the haystack. Cosine similarity measures the angle between two vectors. 1.0 = identical meaning. 0.0 = orthogonal noise.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Query the vault: 'gemini mcp call supabase \"SELECT chunk_id FROM vectors ORDER BY embedding <=> embed('refunds') LIMIT 1;\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('MATCH_FOUND') && history.some(h => h.content.includes('refund'));
+        },
+        hint: "Use the cosine distance operator '<=>'. Query for 'How do I handle refunds?' against the vector store."
+      }
+    ],
+    feedback: {
+      success: "\u2713 NEEDLE_EXTRACTED. Cosine similarity search returned the exact signal from the haystack."
+    }
+  },
+  {
+    id: "L6-5-SESSION",
+    blockId: "B6",
+    title: "6.5: Long-Term Memory (Session Persistence)",
+    description: "Short-term memory vanishes on reboot. Store thoughts in the Vector Vault so the agent remembers across sessions.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Save the session: 'gemini --session-id \"user_oleksii\" \"Save this session to the vault\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('SESSION_SAVED') && history.some(h => h.content.includes('--session-id'));
+        },
+        hint: "Use '--session-id' to anchor this context to a persistent identity in the Vector Vault."
+      },
+      {
+        id: "T2",
+        instruction: "Retrieve across reboot: 'gemini --session-id \"user_oleksii\" \"What did we talk about yesterday?\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('SESSION_RETRIEVED') && history.filter(h => h.content.includes('--session-id')).length >= 2;
+        },
+        hint: "Re-use the same '--session-id' to retrieve the persisted context vector."
+      }
+    ],
+    feedback: {
+      success: "\u2713 MEMORY_PERSISTENT. The agent now remembers across reboots. The Signal endures."
+    }
+  },
+  {
+    id: "L6-6-ROUTING",
+    blockId: "B6",
+    title: "6.6: The Hybrid Decision (RAG vs. Window)",
+    description: "Architectural mastery: knowing when to Retrieve and when to Inject. The Cost-Latency-Accuracy triangle.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Create 'routing_policy.json' with vault_threshold and prompt_threshold fields.",
+        validate: (vfs, history, currentPath) => {
+          const file = vfs['/routing_policy.json'] as import('./vfsStore').FileNode;
+          return !!file?.content.includes('vault_threshold') && !!file?.content.includes('prompt_threshold');
+        },
+        hint: "Create routing_policy.json with 'vault_threshold' and 'prompt_threshold' fields using echo."
+      }
+    ],
+    feedback: {
+      success: "\u2713 ROUTING_OPTIMIZED. Token efficiency maximized. Cost-Latency-Accuracy triangle balanced."
+    }
+  },
+  {
+    id: "L6-7-WATCHER",
+    blockId: "B6",
+    title: "6.7: The Automated Watcher (Auto-Indexing)",
+    description: "Zero-maintenance memory. Every time app.py is modified, the Vector Vault must be automatically updated.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Establish the autonomous watcher loop. Modify the source file and trigger the re-indexing signal.",
+        validate: (vfs, history, currentPath) => {
+          const state = useLessonStore.getState();
+          return state.currentLogicStepIdx >= 1 && state.agentStatus === 'SUCCESS';
+        },
+        hint: "Follow the Logic Feed. First modify app.py, then confirm the re-indexing query."
+      }
+    ],
+    logicChain: [
+      {
+        step: 1,
+        ai_thought: "THOUGHT: The Signal is dynamic. I need a watcher to detect modifications in the source logic and bridge them to the Vector Vault. Architect, modify src/app.py to trigger the sensor.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "echo \"# vector-indexed\" >> src/app.py",
+        hint: "Append the trigger comment to src/app.py using echo.",
+        on_success: "OBSERVATION: [SYSTEM]: FILE_CHANGE_DETECTED. The watcher has identified a mutation in src/app.py."
+      },
+      {
+        step: 2,
+        ai_thought: "THOUGHT: The mutation is captured. Now I must synchronize the Vault by executing the re-embedding protocol via the Supabase bridge.",
+        expected_action_type: "COMMAND_EXECUTION",
+        required_command: "gemini mcp call supabase \"UPDATE vectors SET embedding = re_embed(app_py) WHERE source = 'src/app.py';\"",
+        hint: "Run the re-indexing query using the Supabase MCP.",
+        on_success: "OBSERVATION: [SYSTEM]: RE-INDEXING_VECTOR_VAULT... [OK]. The semantic state is now current."
+      }
+    ],
+    feedback: {
+      success: "\u2713 WATCHER_ACTIVE. THE MEMORY IS SELF-HEALING."
+    }
+  },
+  {
+    id: "L6-8-PRUNE",
+    blockId: "B6",
+    title: "6.8: The Semantic Prune (Memory Hygiene)",
+    description: "The vault accumulates conflict. Outdated embeddings poison retrieval. Prune the noise. Keep only the Signal.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Scan for conflicts: 'gemini mcp call supabase \"SELECT chunk_id, version FROM vectors WHERE source = 'api_docs' ORDER BY version;\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('CONFLICT_DETECTED') && history.some(h => h.content.includes('api_docs'));
+        },
+        hint: "Query the vault for api_docs entries to expose outdated version conflicts."
+      },
+      {
+        id: "T2",
+        instruction: "Prune outdated signals: 'gemini mcp call supabase \"DELETE FROM vectors WHERE source = 'api_docs' AND version < 3;\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('PRUNED') && history.some(h => h.content.includes('DELETE FROM vectors'));
+        },
+        hint: "Delete old vector records (version < 3) to keep only the latest API documentation."
+      },
+      {
+        id: "T3",
+        instruction: "Verify clean vault: 'gemini mcp call supabase \"SELECT COUNT(*) FROM vectors WHERE source = 'api_docs';\"'",
+        validate: (vfs, history, currentPath) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('CLEAN') && history.some(h => h.content.includes('SELECT COUNT'));
+        },
+        hint: "Run a count query to confirm only the latest version remains in the vault."
+      }
+    ],
+    feedback: {
+      success: "\u2713 VAULT_CLEAN. Signal-to-noise ratio at maximum. The memory is pure."
     }
   }
 ];
