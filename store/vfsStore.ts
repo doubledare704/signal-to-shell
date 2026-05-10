@@ -115,6 +115,23 @@ export const BLOCK_VFS: Record<string, VFSState> = {
     '/chunks': { type: 'dir', children: ['chunk_1.txt', 'chunk_2.txt'] },
     '/chunks/chunk_1.txt': { type: 'file', content: 'How do I handle refunds?' },
     '/chunks/chunk_2.txt': { type: 'file', content: 'Refunds take 5-10 business days.' }
+  },
+  'B7': {
+    '/': { type: 'dir', children: ['README.md', 'STS.md', 'GEMINI.md', 'Dockerfile', 'requirements.txt', 'app', 'scripts', 'data', 'chaos.py'] },
+    '/README.md': { type: 'file', content: "# Block 7: Apocalypse Dreams\nHeadless Gemini CLI production wrapper for FastAPI and Cloud Run." },
+    '/STS.md': { type: 'file', content: "# STS Brain\nRole: Headless Architect\nRules: Validate inputs. Stream outputs. Protect tokens." },
+    '/GEMINI.md': { type: 'file', content: "# Local Rules\nRole: Development Agent\nRules: Use local sandbox fixtures only." },
+    '/Dockerfile': { type: 'file', content: "" },
+    '/requirements.txt': { type: 'file', content: "fastapi\nuvicorn[standard]\npydantic\nsse-starlette" },
+    '/chaos.py': { type: 'file', content: "import asyncio\n\nREQUESTS = 10\nMAX_CONCURRENCY = 2\n" },
+    '/app': { type: 'dir', children: ['main.py', 'schemas.py', 'worker.py', 'data'] },
+    '/app/main.py': { type: 'file', content: "from fastapi import FastAPI\n\napp = FastAPI(title='Signal Nexus')\n" },
+    '/app/schemas.py': { type: 'file', content: "from pydantic import BaseModel\n" },
+    '/app/worker.py': { type: 'file', content: "tasks = {}\n" },
+    '/app/data': { type: 'dir', children: [] },
+    '/scripts': { type: 'dir', children: ['startup.sh'] },
+    '/scripts/startup.sh': { type: 'file', content: "#!/bin/sh\n# Writes GEMINI.md based on ENV\n" },
+    '/data': { type: 'dir', children: [] }
   }
 };
 
@@ -205,7 +222,7 @@ export const useVFSStore = create<VFSStore>()(
         const vfs = state.vfs;
         const currentPath = state.currentPath;
 
-        let newHistory = [...state.history, { type: 'input', content: `${currentPath} > ${rawInput}` } as HistoryEntry];
+        const newHistory = [...state.history, { type: 'input', content: `${currentPath} > ${rawInput}` } as HistoryEntry];
 
         const lessonState = (useLessonStore as any).getState();
         const currentLesson = LESSONS[lessonState.currentLessonIdx];
@@ -252,6 +269,27 @@ export const useVFSStore = create<VFSStore>()(
                  }
               }
 
+              // Special effects for B7 headless production security audits
+              if (lessonState.currentBlockId === 'B7') {
+                if (currentLesson.id === 'L7-7-AUTH') {
+                  if (lessonState.currentLogicStepIdx === 0) {
+                    const newVfs = { ...get().vfs };
+                    const main = newVfs['/app/main.py'] as FileNode;
+                    newVfs['/app/main.py'] = {
+                      type: 'file',
+                      content: `${main.content}\nfrom fastapi.security import APIKeyHeader\nAPI_KEY_HEADER = APIKeyHeader(name='X-API-Key')\n`
+                    };
+                    set({ vfs: newVfs });
+                    newHistory.push({ type: 'system', content: '↳ [CODE_EDIT]: APIKeyHeader dependency appended to app/main.py' });
+                  } else if (lessonState.currentLogicStepIdx === 1) {
+                    newHistory.push({ type: 'system', content: '↳ [SECURITY_AUDIT]: 401 Unauthorized | Missing X-API-Key' });
+                  } else if (lessonState.currentLogicStepIdx === 2) {
+                    newHistory.push({ type: 'system', content: '↳ [SECURITY_AUDIT]: 403 Forbidden | Invalid X-API-Key' });
+                    newHistory.push({ type: 'system', content: '[SECURITY]: CORS_LOCKED | AUTH_ENFORCED' });
+                  }
+                }
+              }
+
               // Use the new atomic logic step validator
               lessonState.validateLogicStep(
                 lessonState.currentBlockId, 
@@ -261,7 +299,7 @@ export const useVFSStore = create<VFSStore>()(
               );
               set({ history: newHistory });
               return;
-            } else if (lessonState.currentBlockId === 'B3' || (lessonState.currentBlockId === 'B5' && currentLesson.logicChain)) {
+            } else if (lessonState.currentBlockId === 'B3' || (lessonState.currentBlockId === 'B5' && currentLesson.logicChain) || (lessonState.currentBlockId === 'B7' && currentLesson.logicChain)) {
               // Only fail if it was a logic chain lesson and command was wrong
               lessonState.setAgentStatus('ERROR');
               newHistory.push({ type: 'system', content: `SIGNAL_ERROR: THE AGENT CANNOT PROCESS THIS OBSERVATION. EXPECTED: ${currentStep.required_command}` });
@@ -360,6 +398,121 @@ export const useVFSStore = create<VFSStore>()(
               }
               set({ history: newHistory });
               return;
+          }
+        }
+
+        // Block 7 (Apocalypse Dreams) Headless Production Interceptor
+        if (state.currentBlockId === 'B7') {
+          if (rawInput.includes('POST') && rawInput.includes('/signal') && !rawInput.includes('self-heal')) {
+            if (rawInput.includes('strict') || rawInput.includes('malformed')) {
+              newHistory.push({ type: 'system', content: '↳ POST /signal/strict { "mode": "malformed" }' });
+              newHistory.push({ type: 'system', content: '↳ [EXEC]: gemini -p "return action and reason" --output-format json' });
+              newHistory.push({ type: 'output', content: '422 Unprocessable Entity: missing required field "reason"' });
+              set({ history: newHistory });
+              return;
+            }
+
+            if (rawInput.includes('X-API-Key') && rawInput.includes('wrong')) {
+              newHistory.push({ type: 'output', content: '403 Forbidden: invalid X-API-Key' });
+              set({ history: newHistory });
+              return;
+            }
+
+            if (!rawInput.includes('X-API-Key') && currentLesson?.id === 'L7-7-AUTH') {
+              newHistory.push({ type: 'output', content: '401 Unauthorized: X-API-Key required' });
+              set({ history: newHistory });
+              return;
+            }
+
+            newHistory.push({ type: 'system', content: '[INFO]: FastAPI server listening on port 8000...' });
+            newHistory.push({ type: 'system', content: '↳ POST /signal { "query": "audit logs" }' });
+            newHistory.push({ type: 'system', content: '↳ [EXEC]: gemini -p "audit logs" --output-format json' });
+            newHistory.push({ type: 'output', content: '{ "status": "success", "data": "No errors found." }' });
+            set({ history: newHistory });
+            return;
+          }
+
+          if (rawInput.includes('fastapi run') || rawInput.includes('uvicorn')) {
+            newHistory.push({ type: 'system', content: '[INFO]: FastAPI server listening on port 8000...' });
+            newHistory.push({ type: 'system', content: '↳ POST /signal { "query": "audit logs" }' });
+            newHistory.push({ type: 'system', content: '↳ [EXEC]: gemini -p "audit logs" --output-format json' });
+            newHistory.push({ type: 'output', content: '{ "status": "success", "data": "No errors found." }' });
+            set({ history: newHistory });
+            return;
+          }
+
+          if (rawInput.includes('/signal/stream') || rawInput.includes('curl -N')) {
+            newHistory.push({ type: 'system', content: '[HTTP_INBOUND]: GET /signal/stream' });
+            newHistory.push({ type: 'system', content: '↳ [EXEC_STREAM]: asyncio.create_subprocess_exec("gemini", "-p", "stream status")' });
+            newHistory.push({ type: 'output', content: 'event: thought\ndata: Booting headless Gemini...\n\nevent: thought\ndata: Reading container context...\n\nevent: done\ndata: SERVICE_READY' });
+            set({ history: newHistory });
+            return;
+          }
+
+          if (rawInput.includes('/tasks/self-heal')) {
+            newHistory.push({ type: 'system', content: '[HTTP_INBOUND]: POST /tasks/self-heal' });
+            newHistory.push({ type: 'output', content: '202 Accepted { "task_id": "heal-7f3a", "status": "queued" }' });
+            newHistory.push({ type: 'system', content: '↳ [WORKER_LOG]: heal-7f3a started after response close' });
+            newHistory.push({ type: 'system', content: '↳ [WORKER_LOG]: gemini -p "repair failing service" --yolo' });
+            newHistory.push({ type: 'system', content: '↳ [WORKER_LOG]: self-healing loop completed' });
+            set({ history: newHistory });
+            return;
+          }
+
+          if (rawInput.includes('OPTIONS') && rawInput.includes('/signal')) {
+            if (rawInput.includes('localhost:5173')) {
+              newHistory.push({ type: 'system', content: '[HTTP_INBOUND]: OPTIONS /signal Origin=http://localhost:5173' });
+              newHistory.push({ type: 'output', content: '200 OK\nAccess-Control-Allow-Origin: http://localhost:5173\nAccess-Control-Allow-Methods: POST, OPTIONS' });
+            } else {
+              newHistory.push({ type: 'output', content: '403 Forbidden: Cross-Origin Threat Blocked' });
+            }
+            set({ history: newHistory });
+            return;
+          }
+
+          if (rawInput === 'ENV=prod ./scripts/startup.sh' || rawInput === './scripts/startup.sh') {
+            const newVfs = { ...get().vfs };
+            newVfs['/GEMINI.md'] = {
+              type: 'file',
+              content: '# Production Rules\nRole: Production Service Agent\nNever delete files in /app/data\nUse structured logs for every worker task.'
+            };
+            set({ vfs: newVfs });
+            newHistory.push({ type: 'system', content: '[BOOT]: ENV=prod detected. Overwriting GEMINI.md with Production Rules.' });
+            newHistory.push({ type: 'output', content: 'IDENTITY_CONFIRMED: Production Service Agent' });
+            set({ history: newHistory });
+            return;
+          }
+
+          if (rawInput === 'judge Dockerfile') {
+            const dockerfile = (get().vfs['/Dockerfile'] as FileNode)?.content || '';
+            if (dockerfile.includes('@google/gemini-cli') && dockerfile.includes('COPY STS.md /app/STS.md') && dockerfile.includes('USER')) {
+              newHistory.push({ type: 'output', content: 'DOCKERFILE_VALID: BASE_SLIM | GEMINI_CLI_OFFICIAL | STS_COPIED | NON_ROOT_USER | LAYERS_EFFICIENT' });
+            } else {
+              newHistory.push({ type: 'output', content: 'DOCKERFILE_INVALID: expected slim base, official @google/gemini-cli install, STS copy, and non-root USER' });
+            }
+            set({ history: newHistory });
+            return;
+          }
+
+          if (rawInput.includes('gcloud run deploy')) {
+            if (rawInput.includes('--set-secrets') && rawInput.includes('GEMINI_API_KEY')) {
+              newHistory.push({ type: 'system', content: '[DEPLOY]: gcloud run deploy nexus-agent --platform managed --region us-central1' });
+              newHistory.push({ type: 'system', content: '[SECRETS]: GEMINI_API_KEY <= Secret Manager: gemini-api-key:latest' });
+              newHistory.push({ type: 'output', content: 'SERVICE_LIVE: https://nexus-agent-x9.a.run.app\n[SERVICE_DEPLOYED]: https://nexus-production.a.run.app' });
+            } else {
+              newHistory.push({ type: 'output', content: 'DEPLOY_BLOCKED: GEMINI_API_KEY must be mapped via --set-secrets' });
+            }
+            set({ history: newHistory });
+            return;
+          }
+
+          if (rawInput.includes('python chaos.py')) {
+            newHistory.push({ type: 'system', content: '[CHAOS_TEST]: Dispatching 10 simultaneous HTTP signals...' });
+            newHistory.push({ type: 'system', content: '↳ [SEMAPHORE]: max_concurrency=2 | queued=8 | rejected=0' });
+            newHistory.push({ type: 'system', content: '↳ [WORKER_LOG]: subprocess pool drained without state loss' });
+            newHistory.push({ type: 'output', content: 'QUEUE_STABLE\n[SERVICE_DEPLOYED]: https://nexus-production.a.run.app\n[SECURITY]: CORS_LOCKED | AUTH_ENFORCED\n[STATE]: AUTONOMOUS_IN_THE_WILD' });
+            set({ history: newHistory });
+            return;
           }
         }
         

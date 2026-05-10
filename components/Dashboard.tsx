@@ -13,11 +13,14 @@ const THEME = {
   muted: 'text-gray-500',
   b5Accent: 'text-[#D4AF37]',
   b5AccentBg: 'bg-[#D4AF37]',
+  b7Accent: 'text-[#FF4500]',
+  b7AccentBg: 'bg-[#FF4500]',
 };
 
 export const Dashboard = () => {
   const { completedLessonIds, setView, setCurrentLessonIdx, maxLessonIdx } = useLessonStore();
   const isB5Complete = LESSONS.filter(l => l.blockId === 'B5').every(l => completedLessonIds.includes(l.id));
+  const isB7Complete = LESSONS.filter(l => l.blockId === 'B7').every(l => completedLessonIds.includes(l.id));
 
   const getBlockProgress = (blockId: string) => {
     const blockLessonIds = LESSONS.filter(l => l.blockId === blockId).map(l => l.id);
@@ -82,8 +85,9 @@ export const Dashboard = () => {
             const firstLessonIdx = LESSONS.findIndex(l => l.blockId === block.id);
             const isLocked = firstLessonIdx > maxLessonIdx && i > 0;
             const isB5 = block.id === 'B5';
-            const blockAccent = isB5 ? 'text-[#D4AF37]' : THEME.accent;
-            const blockAccentBg = isB5 ? 'bg-[#D4AF37]' : THEME.accentBg;
+            const isB7 = block.id === 'B7';
+            const blockAccent = isB7 ? 'text-[#FF4500]' : isB5 ? 'text-[#D4AF37]' : THEME.accent;
+            const blockAccentBg = isB7 ? 'bg-[#FF4500]' : isB5 ? 'bg-[#D4AF37]' : THEME.accentBg;
 
             return (
               <div 
@@ -101,7 +105,7 @@ export const Dashboard = () => {
               >
                 {/* Background Accent */}
                 {!isLocked && (
-                  <div className={`absolute top-0 right-0 w-32 h-32 ${isB5 ? 'bg-[#D4AF37]' : 'bg-[#00FF9F]'} opacity-0 group-hover:opacity-[0.03] blur-[40px] transition-opacity`}></div>
+                  <div className={`absolute top-0 right-0 w-32 h-32 ${isB7 ? 'bg-[#FF4500]' : isB5 ? 'bg-[#D4AF37]' : 'bg-[#00FF9F]'} opacity-0 group-hover:opacity-[0.03] blur-[40px] transition-opacity`}></div>
                 )}
 
                 <div className="flex justify-between items-start mb-6">
@@ -147,15 +151,15 @@ export const Dashboard = () => {
       <div className={`mt-auto p-6 border-t ${THEME.border} flex items-center justify-between text-[10px] text-gray-600 font-bold uppercase tracking-widest`}>
         <div className="flex gap-8">
           <span className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${isB5Complete ? 'bg-[#D4AF37] animate-pulse' : 'bg-green-500'}`}></div>
+            <div className={`w-1.5 h-1.5 rounded-full ${isB7Complete ? 'bg-[#FF4500] animate-pulse' : isB5Complete ? 'bg-[#D4AF37] animate-pulse' : 'bg-green-500'}`}></div>
             System: Stable
           </span>
-          <span>Architect_Level: {isB5Complete ? '05 (Master)' : '01'}</span>
+          <span>Architect_Level: {isB7Complete ? '07 (Headless)' : isB5Complete ? '05 (Master)' : '01'}</span>
           <span>Latency: Minimal</span>
         </div>
         <div className="flex gap-8">
           <span>© 2026 Signal to Shell</span>
-          <span className={isB5Complete ? 'text-[#D4AF37]' : THEME.accent}>Status: Operational</span>
+          <span className={isB7Complete ? 'text-[#FF4500]' : isB5Complete ? 'text-[#D4AF37]' : THEME.accent}>Status: Operational</span>
         </div>
       </div>
     </div>

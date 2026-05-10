@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, FolderTree, FileText, Maximize2, Globe } from 'lucide-react';
+import { Terminal, FolderTree, FileText, Maximize2, Globe, Shield, KeyRound } from 'lucide-react';
 import { useVFSStore } from '../store/vfsStore';
 import { useLessonStore, LESSONS } from '../store/lessonStore';
 import { useJudgeEngine } from '../lib/judgeEngine';
@@ -20,6 +20,8 @@ const THEME = {
   b5AccentBg: 'bg-[#D4AF37]',
   b6Accent: 'text-[#8A2BE2]',
   b6AccentBg: 'bg-[#8A2BE2]',
+  b7Accent: 'text-[#FF4500]',
+  b7AccentBg: 'bg-[#FF4500]',
 };
 
 export const TerminalController = () => {
@@ -28,8 +30,9 @@ export const TerminalController = () => {
   
   const isB5 = currentBlockId === 'B5';
   const isB6 = currentBlockId === 'B6';
-  const activeAccent = isB6 ? THEME.b6Accent : isB5 ? THEME.b5Accent : THEME.accent;
-  const activeAccentBg = isB6 ? THEME.b6AccentBg : isB5 ? THEME.b5AccentBg : THEME.accentBg;
+  const isB7 = currentBlockId === 'B7';
+  const activeAccent = isB7 ? THEME.b7Accent : isB6 ? THEME.b6Accent : isB5 ? THEME.b5Accent : THEME.accent;
+  const activeAccentBg = isB7 ? THEME.b7AccentBg : isB6 ? THEME.b6AccentBg : isB5 ? THEME.b5AccentBg : THEME.accentBg;
 
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
@@ -118,6 +121,18 @@ export const TerminalController = () => {
             <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
             LIVE_SESSION
           </div>
+          {isB7 && (
+            <div className="px-2 py-1 bg-[#FF4500]/10 border border-[#FF4500]/30 rounded text-[10px] flex items-center gap-3 text-[#FF4500]">
+              <span className="flex items-center gap-1" title="CORS Lock">
+                <Shield className="w-3 h-3" />
+                CORS_LOCK
+              </span>
+              <span className="flex items-center gap-1" title="Auth Pulse">
+                <KeyRound className="w-3 h-3 animate-pulse" />
+                AUTH_PULSE
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -253,6 +268,15 @@ export const TerminalController = () => {
             <div className={`flex items-center gap-1.5 ${THEME.info} animate-pulse`}>
               <div className="w-1.5 h-1.5 rounded-full bg-[#00D1FF]"></div>
               SIGNAL: ACTIVE (VOLATILE)
+            </div>
+          )}
+          {currentBlockId === 'B7' && (
+            <div className="flex items-center gap-3 text-[#FF4500] animate-pulse">
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#FF4500]"></div>
+                HTTP: 200
+              </span>
+              <span>Ping: 42ms</span>
             </div>
           )}
           <div className="flex items-center gap-1.5">

@@ -17,6 +17,8 @@ const THEME = {
   muted: 'text-gray-500',
   b5Accent: 'text-[#D4AF37]',
   b5AccentBg: 'bg-[#D4AF37]',
+  b7Accent: 'text-[#FF4500]',
+  b7AccentBg: 'bg-[#FF4500]',
 };
 
 export const Sidebar = () => {
@@ -34,8 +36,9 @@ export const Sidebar = () => {
   } = useLessonStore();
 
   const isB5 = currentBlockId === 'B5';
-  const activeAccent = isB5 ? THEME.b5Accent : THEME.accent;
-  const activeAccentBg = isB5 ? THEME.b5AccentBg : THEME.accentBg;
+  const isB7 = currentBlockId === 'B7';
+  const activeAccent = isB7 ? THEME.b7Accent : isB5 ? THEME.b5Accent : THEME.accent;
+  const activeAccentBg = isB7 ? THEME.b7AccentBg : isB5 ? THEME.b5AccentBg : THEME.accentBg;
 
   const isLastLesson = currentLessonIdx === LESSONS.length - 1;
   const vfs = useVFSStore((state) => state.vfs);
@@ -58,7 +61,7 @@ export const Sidebar = () => {
           className="flex items-center gap-2 cursor-pointer group"
           onClick={() => setView('dashboard')}
         >
-          <div className={`w-3 h-3 rounded-full ${activeAccentBg} animate-pulse shadow-[0_0_8px_${isB5 ? '#D4AF37' : '#00FF9F'}]`}></div>
+          <div className={`w-3 h-3 rounded-full ${activeAccentBg} animate-pulse shadow-[0_0_8px_${isB7 ? '#FF4500' : isB5 ? '#D4AF37' : '#00FF9F'}]`}></div>
           <h1 className={`font-bold tracking-widest text-lg uppercase font-[family-name:var(--font-orbitron)] group-hover:${activeAccent} transition-colors`}>
   Signal to <span className={activeAccent}>shell</span>
 </h1>
@@ -95,7 +98,7 @@ export const Sidebar = () => {
                   Operative, you are entering the <span className={THEME.accent}>Signal to Shell</span> nexus—a high-fidelity training environment designed to evolve your biological command-line reflexes into an autonomous AI orchestration engine.
                 </p>
                 <p>
-                  This project is a modular journey from <span className="text-white">Zero to Master of the Gemini CLI</span>. You will progress through five critical blocks, each inspired by the shifting states of consciousness required for high-stakes agentic operations.
+                  This project is a modular journey from <span className="text-white">Zero to Master of the Gemini CLI</span>. You will progress through seven critical blocks, each inspired by the shifting states of consciousness required for high-stakes agentic operations.
                 </p>
                 <div className={`p-6 border-l-2 border-[#00FF9F] bg-[#00FF9F]/5 rounded-r-sm shadow-[inset_0_0_20px_rgba(0,255,159,0.03)]`}>
                   <p className="text-sm font-mono text-[#00FF9F]">
@@ -180,10 +183,10 @@ export const Sidebar = () => {
                     <div key={task.id} className={`flex items-start gap-2 ${isCompleted ? THEME.muted : isCurrent ? 'text-white' : 'text-gray-600 opacity-50'}`}>
                       <div className="mt-0.5">
                         {isCompleted ? (
-                          <CheckCircle2 className={`w-4 h-4 ${THEME.accent}`} />
+                          <CheckCircle2 className={`w-4 h-4 ${activeAccent}`} />
                         ) : isCurrent ? (
-                          <div className={`w-4 h-4 rounded-full border border-[#00FF9F] flex items-center justify-center animate-pulse`}>
-                            <div className="w-2 h-2 rounded-full bg-[#00FF9F]"></div>
+                          <div className={`w-4 h-4 rounded-full border ${isB7 ? 'border-[#FF4500]' : 'border-[#00FF9F]'} flex items-center justify-center animate-pulse`}>
+                            <div className={`w-2 h-2 rounded-full ${isB7 ? 'bg-[#FF4500]' : 'bg-[#00FF9F]'}`}></div>
                           </div>
                         ) : (
                           <div className="w-4 h-4 rounded-full border border-gray-600"></div>
@@ -221,7 +224,7 @@ export const Sidebar = () => {
                         <DecryptText
                           text={currentLesson.feedback.success}
                           onComplete={() => setDecryptionComplete(true)}
-                          className={`font-mono ${activeAccent} drop-shadow-[0_0_5px_${isB5 ? '#D4AF37' : '#00FF9F'}]`}
+                          className={`font-mono ${activeAccent} drop-shadow-[0_0_5px_${isB7 ? '#FF4500' : isB5 ? '#D4AF37' : '#00FF9F'}]`}
                         />
                       </p>
                     </div>

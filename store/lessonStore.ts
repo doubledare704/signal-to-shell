@@ -76,6 +76,12 @@ export const BLOCKS: Block[] = [
     title: "Block 6: The Less I Know The Better",
     subtitle: "The Vector State (Deep Memory)",
     description: "\u201cSomeone said, it\u2019s not now or never / Wait 10 years, we\u2019ll be together.\u201d Move from terminal to the Vector Vault."
+  },
+  {
+    id: "B7",
+    title: "Block 7: Apocalypse Dreams",
+    subtitle: "The Headless Production (Cloud)",
+    description: "“Everything is changing... I can't stop it now.” Move the Signal into FastAPI, containers, Cloud Run, and open-web pressure."
   }
 ];
 
@@ -1223,6 +1229,281 @@ export const LESSONS: Lesson[] = [
     feedback: {
       success: "\u2713 VAULT_CLEAN. Signal-to-noise ratio at maximum. The memory is pure."
     }
+  },
+
+  // BLOCK 7: APOCALYPSE DREAMS (The Headless Production)
+  {
+    id: "L7-1-API",
+    blockId: "B7",
+    title: "7.1: The API Gateway (FastAPI Wrapper)",
+    description: "The simulation exits the local shell. Wrap Gemini CLI headless mode in FastAPI: a POST /signal payload becomes a subprocess call to `gemini -p`.",
+    example: "curl -X POST /signal -d '{\"query\":\"audit logs\"}'",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Trigger the `/signal` gateway with a POST request that invokes `gemini -p`.",
+        validate: (vfs, history) => {
+          return history.some(h => h.content.includes('POST /signal')) &&
+            history.some(h => h.content.includes('gemini -p "audit logs"'));
+        },
+        hint: "Use curl against /signal with a JSON query. The virtual server will show the subprocess bridge."
+      }
+    ],
+    feedback: {
+      success: "\u2713 API_GATEWAY_ONLINE. Terminal signal converted into a headless HTTP service."
+    }
+  },
+  {
+    id: "L7-2-STREAM",
+    blockId: "B7",
+    title: "7.2: Streamed Consciousness (SSE)",
+    description: "Users will not wait in silence while an agent thinks. Stream Gemini CLI output line-by-line with Server-Sent Events so the browser sees the thoughts as they happen.",
+    example: "curl -N /signal/stream",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Open the streaming endpoint and receive live SSE data frames.",
+        validate: (vfs, history) => {
+          const lastOutput = history.findLast(h => h.type === 'output')?.content;
+          return !!lastOutput?.includes('event: thought') && !!lastOutput?.includes('data: SERVICE_READY');
+        },
+        hint: "Use `curl -N /signal/stream` to keep the response open for server-sent events."
+      }
+    ],
+    feedback: {
+      success: "\u2713 STREAM_OPEN. The web client now hears the agent thinking in real time."
+    }
+  },
+  {
+    id: "L7-3-STRICT",
+    blockId: "B7",
+    title: "7.3: Strict State (Pydantic Validation)",
+    description: "Production agents must return contracts, not vibes. Use Gemini CLI structured output with `--output-format json`, then validate the response with a Pydantic model requiring `action` and `reason`.",
+    example: "curl -X POST /signal/strict -d '{\"mode\":\"malformed\"}'",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Create a Pydantic model that requires `action` and `reason` fields.",
+        validate: (vfs) => {
+          const file = vfs['/app/schemas.py'] as import('./vfsStore').FileNode;
+          return !!file?.content.includes('BaseModel') &&
+            !!file.content.includes('action') &&
+            !!file.content.includes('reason');
+        },
+        hint: "Write a schemas.py file with a BaseModel class and the two required fields."
+      },
+      {
+        id: "T2",
+        instruction: "Send a malformed strict request and confirm it returns `422 Unprocessable Entity`.",
+        validate: (vfs, history) => {
+          return history.some(h => h.content.includes('gemini -p') && h.content.includes('--output-format json')) &&
+            history.some(h => h.content.includes('422 Unprocessable Entity'));
+        },
+        hint: "Use the strict endpoint with a malformed mode so the virtual validator rejects the response."
+      }
+    ],
+    feedback: {
+      success: "\u2713 STRICT_STATE_ENFORCED. Hallucinated JSON keys are rejected at the perimeter."
+    }
+  },
+  {
+    id: "L7-4-IDENTITY",
+    blockId: "B7",
+    title: "7.4: Environment Identity (Headless Grounding)",
+    description: "A headless agent needs to know where it lives. Generate GEMINI.md at startup from the container environment so production rules override local habits.",
+    example: "ENV=prod ./scripts/startup.sh",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Run the startup script in prod mode to inject Production Service Agent rules into GEMINI.md.",
+        validate: (vfs, history) => {
+          const file = vfs['/GEMINI.md'] as import('./vfsStore').FileNode;
+          return !!file?.content.includes('Production Service Agent') &&
+            !!file.content.includes('Never delete files in /app/data') &&
+            history.some(h => h.content.includes('ENV=prod ./scripts/startup.sh'));
+        },
+        hint: "Execute `ENV=prod ./scripts/startup.sh` to let the virtual container write GEMINI.md."
+      }
+    ],
+    feedback: {
+      success: "\u2713 CONTAINER_IDENTITY_LOCKED. Gemini now knows it is a production service agent."
+    }
+  },
+  {
+    id: "L7-5-WORKER",
+    blockId: "B7",
+    title: "7.5: The Async Worker (Background Tasks)",
+    description: "Long-running refactors do not belong inside the HTTP request/response loop. Use FastAPI BackgroundTasks to return 202 Accepted while the worker keeps healing state.",
+    example: "curl -X POST /tasks/self-heal",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Trigger the self-healing worker and receive an immediate task_id.",
+        validate: (vfs, history) => {
+          return history.some(h => h.content.includes('202 Accepted')) &&
+            history.some(h => h.content.includes('task_id')) &&
+            history.some(h => h.content.includes('WORKER_LOG'));
+        },
+        hint: "POST to /tasks/self-heal. The Logic Feed becomes worker logs after the HTTP response closes."
+      }
+    ],
+    feedback: {
+      success: "\u2713 WORKER_DECOUPLED. The Signal continues after the request has already returned."
+    }
+  },
+  {
+    id: "L7-6-CORS",
+    blockId: "B7",
+    title: "7.6: The Security Perimeter (CORS)",
+    description: "Browsers block unsafe cross-origin calls by default. Configure FastAPI CORSMiddleware so only the trusted frontend origin can reach the Agent Nexus.",
+    example: "curl -X OPTIONS /signal -H 'Origin: http://localhost:5173'",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Configure CORSMiddleware with the trusted localhost frontend origin.",
+        validate: (vfs) => {
+          const file = vfs['/app/main.py'] as import('./vfsStore').FileNode;
+          return !!file?.content.includes('CORSMiddleware') &&
+            !!file.content.includes('http://localhost:5173');
+        },
+        hint: "Append CORSMiddleware configuration to app/main.py with localhost:5173 in allow_origins."
+      },
+      {
+        id: "T2",
+        instruction: "Send an OPTIONS preflight and confirm the Access-Control-Allow-Origin header.",
+        validate: (vfs, history) => {
+          return history.some(h => h.content.includes('OPTIONS /signal')) &&
+            history.some(h => h.content.includes('Access-Control-Allow-Origin: http://localhost:5173'));
+        },
+        hint: "Use curl -X OPTIONS with an Origin header for http://localhost:5173."
+      }
+    ],
+    feedback: {
+      success: "\u2713 CORS_LOCKED. The browser bridge is open only to trusted origins."
+    }
+  },
+  {
+    id: "L7-7-AUTH",
+    blockId: "B7",
+    title: "7.7: The Locked Nexus (Authentication)",
+    description: "Every unauthenticated request can drain tokens. Add a FastAPI Security dependency that checks X-API-Key before Gemini CLI is allowed to run.",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Follow the Security Audit feed to install the API key barrier.",
+        validate: () => {
+          const state = useLessonStore.getState();
+          return state.currentLogicStepIdx >= 2 && state.agentStatus === 'SUCCESS';
+        },
+        hint: "Follow the Logic Feed exactly: write the header dependency, then test missing and invalid keys."
+      }
+    ],
+    logicChain: [
+      {
+        step: 1,
+        ai_thought: "THOUGHT: The API is exposed to the open web. I am detecting unauthorized pings. I must lock the Nexus before the tokens are depleted.",
+        expected_action_type: "CODE_EDIT",
+        required_command: "echo \"API_KEY_HEADER = APIKeyHeader(name='X-API-Key')\" >> app/main.py",
+        hint: "Append the FastAPI APIKeyHeader dependency to app/main.py.",
+        on_success: "OBSERVATION: Header dependency installed. The Nexus can now inspect incoming keys."
+      },
+      {
+        step: 2,
+        ai_thought: "THOUGHT: A missing key must fail before the subprocess boundary. Test the empty request path.",
+        expected_action_type: "HTTP_AUDIT",
+        required_command: "curl -X POST /signal",
+        hint: "Send the request without X-API-Key.",
+        on_success: "OBSERVATION: 401 Unauthorized. Empty signals are rejected before token spend."
+      },
+      {
+        step: 3,
+        ai_thought: "THOUGHT: A forged key is more dangerous than no key. Test the wrong secret and confirm the service refuses it.",
+        expected_action_type: "HTTP_AUDIT",
+        required_command: "curl -X POST /signal -H 'X-API-Key: wrong'",
+        hint: "Send a wrong X-API-Key header.",
+        on_success: "OBSERVATION: 403 Forbidden. Auth barrier active. The Signal is now a private channel."
+      }
+    ],
+    feedback: {
+      success: "\u2713 AUTH_ENFORCED. Intelligence tokens are protected by the Locked Nexus."
+    }
+  },
+  {
+    id: "L7-8-DOCKER",
+    blockId: "B7",
+    title: "7.8: Containerized Logic (Dockerfile)",
+    description: "Package the brain for the cloud. Build a lightweight Debian-based container with Python, FastAPI dependencies, the official `@google/gemini-cli` package, and the STS.md brain file.",
+    example: "judge Dockerfile",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Write a Dockerfile that installs `@google/gemini-cli` and copies STS.md into `/app`.",
+        validate: (vfs) => {
+          const file = vfs['/Dockerfile'] as import('./vfsStore').FileNode;
+          return !!file?.content.includes('python:3.12-slim') &&
+            !!file.content.includes('@google/gemini-cli') &&
+            !!file.content.includes('COPY STS.md /app/STS.md') &&
+            !!file.content.includes('USER');
+        },
+        hint: "Use a slim Python base, install the official npm package name, copy STS.md, and run as a non-root user."
+      },
+      {
+        id: "T2",
+        instruction: "Run the Dockerfile judge and pass the security/size checks.",
+        validate: (vfs, history) => {
+          return history.some(h => h.content.includes('DOCKERFILE_VALID')) &&
+            history.some(h => h.content.includes('NON_ROOT_USER'));
+        },
+        hint: "Run `judge Dockerfile` to validate the virtual image layers."
+      }
+    ],
+    feedback: {
+      success: "\u2713 IMAGE_HARDENED. The headless brain is packaged for Cloud Run."
+    }
+  },
+  {
+    id: "L7-9-CLOUDRUN",
+    blockId: "B7",
+    title: "7.9: The Cloud Run Nexus (GCP Deployment)",
+    description: "Deploy the container as a headless agentic service on Google Cloud Run. Secrets belong in Secret Manager, not .env files baked into images.",
+    example: "gcloud run deploy nexus-agent --set-secrets GEMINI_API_KEY=gemini-api-key:latest",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Simulate a Cloud Run deployment with GEMINI_API_KEY mapped from Secret Manager.",
+        validate: (vfs, history) => {
+          return history.some(h => h.content.includes('gcloud run deploy')) &&
+            history.some(h => h.content.includes('--set-secrets')) &&
+            history.some(h => h.content.includes('SERVICE_LIVE'));
+        },
+        hint: "Use gcloud run deploy with --set-secrets GEMINI_API_KEY=gemini-api-key:latest."
+      }
+    ],
+    feedback: {
+      success: "\u2713 SERVICE_DEPLOYED. Cloud Run Nexus is live with secret-backed identity."
+    }
+  },
+  {
+    id: "L7-10-APOCALYPSE",
+    blockId: "B7",
+    title: "7.10: The Apocalypse (Load & Chaos Testing)",
+    description: "The open web is concurrency, retries, and noise. Use a semaphore-backed queue so ten simultaneous signals do not spawn fifty uncontrolled Gemini subprocesses.",
+    example: "python chaos.py --requests 10",
+    tasks: [
+      {
+        id: "T1",
+        instruction: "Run the chaos script and survive 10 simultaneous requests with the queue intact.",
+        validate: (vfs, history) => {
+          return history.some(h => h.content.includes('CHAOS_TEST')) &&
+            history.some(h => h.content.includes('QUEUE_STABLE')) &&
+            history.some(h => h.content.includes('AUTONOMOUS_IN_THE_WILD'));
+        },
+        hint: "Run `python chaos.py --requests 10` to test semaphore-limited concurrency."
+      }
+    ],
+    feedback: {
+      success: "\u2713 APOCALYPSE_SURVIVED. CORS_LOCKED | AUTH_ENFORCED | AUTONOMOUS_IN_THE_WILD."
+    }
   }
 ];
 
@@ -1233,6 +1514,7 @@ interface LessonStore {
   currentTaskIdx: number;
   isSuccess: boolean;
   isDecrypting: boolean;
+  showAscension: boolean;
   view: 'dashboard' | 'lesson';
   currentBlockId: string;
   agentStatus: AgentStatus;
@@ -1310,6 +1592,7 @@ export const useLessonStore = create<LessonStore>()(
       },
       setIsSuccessRaw: (isSuccess) => set({ isSuccess }),
       setIsDecrypting: (isDecrypting) => set({ isDecrypting }),
+      setShowAscension: (showAscension) => set({ showAscension }),
       setView: (view) => set({ view }),
       setCurrentBlockId: (id) => set({ currentBlockId: id }),
       setAgentStatus: (status) => set({ agentStatus: status }),
